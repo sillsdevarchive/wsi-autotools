@@ -1,0 +1,568 @@
+#!/usr/bin/perl
+
+use Getopt::Long;
+use IO::File;
+use File::Find;
+use File::Spec;
+use Pod::Usage;
+
+$VERSION = 0.01;    #   MJPH    22-NOV-2007     Original
+my (@opt_c, $opt_d, $opt_h, $opt_o, @excludes);
+
+GetOptions( "config|c=s" => \@opt_c,
+			"outdir|d=s" => \$opt_d,
+			"help|h" => \$opt_h,
+			"outfile|o=s" => \$opt_o,
+			"exclude|x=s" => \@excludes);
+
+my ($re_brack) = qr{(?:(?>[^()]+)|\((??{$re_brack})\))+};
+my (%funcs) = (
+	'foreach' => 'foreach',
+	'eval' => 'evalstr',
+	'include' => 'include',
+	'map' => 'mapstr',
+	'indent' => 'indent',
+	'and' => 'fnand',
+	'or' => 'fnor',
+	'osslash' => 'osslash',
+	'dir' => 'dir'
+);
+
+my (%vars) = (
+	'.OS' => $^O,
+	'.TAB' => "\t",
+	'.AT' => '@',
+	'.DP' => '$(',
+);
+
+unless ($opt_c[0] || $opt_h)
+{
+	pod2usage(1);
+	exit;
+}
+
+if ($opt_h)
+{
+	pod2usage( -verbose => 2, -noperldoc => 1);
+	exit;
+}
+
+unless (defined $opt_c)
+{
+	die <<'EOT';
+EOT
+}
+
+# just do files for now
+foreach (@opt_c)
+{ parse($_); }
+
+if ($opt_d)
+{
+	my ($vol, $dirs, $file) = File::Spec->splitpath($ARGV[0]);
+	my (@dirs) = File::Spec->splitdir($dirs);
+	push(@dirs, $file);
+	find({wanted => sub {process_file(scalar @dirs, $_);}, no_chdir => 1}, $ARGV[0]);
+}
+else
+{ process($ARGV[0], $opt_o || ''); }
+
+sub process_file
+{
+	my ($num, $f) = @_;
+	my ($x);
+	return unless (-f $f);
+	foreach $x (@excludes)
+	{ return if ($f =~ m/$x/); }
+	my ($vd, $dd, $fd) = File::Spec->splitpath($opt_d);
+	my ($vol, $dirs, $file) = File::Spec->splitpath($f);
+	my (@dirs) = File::Spec->splitdir($dirs);
+	my ($ofile);
+	pop(@dirs); # remove final /
+	splice(@dirs, 0, $num);
+	$dirs = File::Spec->catdir($opt_d, @dirs);
+	$ofile = File::Spec->catpath($vd, $dirs, $file);
+	process($_, $ofile);
+}
+
+sub parse
+{
+	my ($fname) = @_;
+	my ($fh) = IO::File->new("< $fname") || die "Can't open $fname for reading";
+
+	while (<$fh>)
+	{ parse_eval($_, $fh); }
+	$fh->close;
+}
+
+sub parse_eval
+{
+	my ($str, $fh, $exp) = @_;
+
+	$_ = $str;
+	chomp;
+	return if (m/^\s*[#]/o);     # comment
+	return if (m/^\s*$/o);
+	if (s/^\s*(\S+)\s*=\s*//o)  # simple assignment
+	{
+		my ($var) = expand($1);
+		my ($val);
+		if ($fh && m/^<<\s*(\S+)/o)
+		{
+			my ($delim) = $1;
+			while (<$fh>)
+			{
+				last if (m/^$delim/);
+				$val .= $_;
+			}
+			chomp $val;
+		}
+		elsif (m/^(["'])(.*?)\1/o)
+		{ $val = $2; }
+		elsif (m/^([^#]+)/o)
+		{ $val = $1; }
+
+		$vars{$var} = expand_partial($val);
+	}
+	else
+	{ expand_partial($_); }
+}
+
+sub process
+{
+	my ($ifname, $ofname) = @_;
+	my ($ifh) = IO::File->new("< $ifname") || die "Can't open $ifname for reading";
+	my ($ofh);
+
+	if ($ofname)
+	{ $ofh = IO::File->new("> $ofname") || die "Can't open $ofname for writing"; }
+	else
+	{ $ofh = STDOUT; }
+
+	while (<$ifh>)
+	{
+		s/\@(.*?)\@/$1 ? expand_var($1) : '@'/oge;
+		$ofh->print($_);
+	}
+	$ifh->close;
+	$ofh->close;
+}
+
+sub expand
+{
+	my ($str) = @_;
+	my ($res, $match);
+
+	while ($str =~ s/^(.*?)(\$\$\(|\$\()//os)
+	{
+		my ($end) = $2;
+		$res .= $1;
+		($str, $match) = match_parens($str);
+		if ($end eq '$$(')
+		{ $res .= '$(' . $match . ')'; }
+		else
+		{ $res .= expand_var($match); }
+	}
+	$res .= $str;
+	$res;
+}
+
+sub expand_partial
+{
+	my ($str) = @_;
+
+	my ($res, $match);
+
+	while ($str =~ s/^(.*?)\$\(\!//os)
+	{
+		$res .= $1;
+		($str, $match) = match_parens($str);
+		$res .= expand_var($match);
+	}
+	$res .= $str;
+	$res;
+}
+
+sub match_parens
+{
+	my ($str) = @_;
+	my ($res, $match);
+
+	while ($str =~ s/^([^)]*?)\(//o)
+	{
+		$res .= $1;
+		($str, $match) = match_parens($str);
+		$res .= "($match)";
+	}
+	if ($str =~ s/^([^)]*?)\)//o)
+	{
+		$res .= $1;
+		return ($str, $res);
+	}
+	return $str;
+}
+
+
+sub expand_var
+{
+	my ($var) = @_;
+	my (@parms);
+
+# put var functions in here
+	if ($var =~ s/^([^$()\s]+)\s+//o)
+	{
+		my ($func) = $1;
+#        my (@parms) = split(/\s*,\s*/, $var);
+		while ($var && $var !~ m/^\)/o)
+		{
+			my ($res);
+			while ($var && $var !~ m/^\)/o && $var !~ s/^\s*,\s*//o)
+			{
+				if ($var =~ s/^([^,()]+)//o)
+				{ $res .= $1; }
+				elsif ($var =~ s/^\(//o)
+				{
+					$res .= '(';
+					my ($c) = 1;
+					while ($c > 0)
+					{
+						if ($var =~ s/^([^()]+)//o)
+						{ $res .= $1; }
+						elsif ($var =~ s/^\)//o)
+						{
+							$res .= ")";
+							$c--;
+						}
+						elsif ($var =~ s/^\(//o)
+						{
+							$res .= "(";
+							$c++;
+						}
+					}
+				}
+			}
+			push (@parms, $res);
+		}
+		if (defined $funcs{$func})
+		{ return &{$funcs{$func}}(@parms); }
+		else
+		{ die "Unknown function $func"; }
+	}
+	else
+	{ return expand($vars{expand($var)}); }
+}
+
+# functions
+sub evalstr
+{
+	my ($s, $exp) = @_;
+	my (@lines) = split(/\r?\n/, $s);
+	foreach $t (@lines)
+	{ parse_eval($t); }
+	return '';
+}
+
+sub foreach
+{
+	my ($var, $range, $exp, $nonl) = @_;
+	my (@words) = split(' ', expand($range));
+	my ($v, $resstr, $dnonl);
+
+	$var = expand($var);
+	$dnonl = expand($nonl) if ($nonl);
+	foreach $v (@words)
+	{
+		my ($str);
+
+		$vars{$var} = $v;
+		$str = expand($exp);
+		$resstr .= ($dnonl ? " " : "\n") if ($resstr);
+		$resstr .= expand($str);
+		evalstr($str, 1);
+	}
+	delete $vars{$var};
+#    $vars{expand($res)} = $resstr if ($res);
+	$resstr;
+}
+
+sub include
+{
+	my ($file) = @_;
+	parse(expand($file));
+	return '';
+}
+
+sub mapstr
+{
+	my ($str, @hash) = @_;
+	my ($s) = expand($str);
+	my ($i);
+
+	for ($i = 0; $i < @hash; $i += 2)
+	{
+		my ($key) = expand($hash[$i]);
+		if ($key eq $s || $key eq '')
+		{ return expand($hash[$i+1]); }
+	}
+}
+
+sub indent
+{
+	my ($indent, $str) = @_;
+	my ($s) = expand($str);
+	my ($i) = expand($indent);
+
+	$s =~ s/(^|\n)(?!$)/$1$i/og;
+	$s;
+}
+
+sub fnand
+{
+	my (@parms) = @_;
+	my ($s, $p);
+
+	foreach $p (@parms)
+	{
+		$s = expand($p);
+		return '' unless ($s);
+	}
+	return $s;
+}
+
+sub fnor
+{
+	my (@parms) = @_;
+	my ($s, $p);
+
+	foreach $p (@parms)
+	{
+		$s = expand($p);
+		return $s if ($s);
+	}
+	return '';
+}
+
+sub osslash
+{
+	my ($s) = @_;
+	my ($str) = expand($s);
+
+	$str =~ s{/}{\\}og if ($^O eq 'MSWin32');
+	$str;
+}
+
+sub dir
+{
+	my ($s, @includes) = @_;
+	my ($str) = expand($s);
+	my (@list, $f);
+
+	opendir(DIR, $str) || return '';
+	@list = grep {-f "$str/$_"} readdir(DIR);
+	foreach $f (@includes)
+	{ @list = grep {m/$f/} @list; }
+	return join (" ", @list);
+}
+__END__
+
+=head1 TITLE
+
+autosub - simple macro expansion utility
+
+=head1 SYNOPSIS
+
+	autosub -c config [-d dir] [-o file/dir] [infile]
+
+Using declarations in the config file does simple string macro substitution
+on the input file to create either the output file or output to stdout. If
+-d is used the iterate a templates directory of files creating corresponding
+files relative to -o dir or . Macro replacements are between @@
+
+=head1 OPTIONS
+
+  -c config     Configuration file declaring macro variables
+  -d dir        Template directory to work through
+  -h            Print out complete help
+  -o file/dir   Output to a file or directory according to -d
+
+=head1 DESCRIPTION
+
+autosub is designed to take a configuration file containing string definitions
+of a group of variables that are then used for simple macro replacements in a
+single file or tree of files.
+
+Thus in a configuration file we might have:
+
+  PRODUCT=autosub
+  VERSION=3.1.4
+
+and in a template file:
+
+  tar cvzf @PRODUCT@-@VERSION@.tgz src
+
+Then the resulting file will contain:
+
+  tar cvzf autosub-3.1.4.tgz src
+
+Within the configuration file, access can be made to previously defined variables
+using make style $(). For example:
+
+  TARBALL=$(PRODUCT)-$(VERSION).tgz
+
+Notice that autosub does late evaluation. Thus we could define these variables
+in any order and the actual values would not be used until they were needed, i.e.
+at macro expansion time.
+
+Variables may also be used in the naming of other variables as in:
+
+  $(PRODUCT)_SRC = src
+
+which would immediately be expanded (because the name of a variable is needed
+for its declaration), to be:
+
+  autosub_SRC = src
+
+In addition to simple string replacements, multiline variables may be
+declared using hereis syntax. Thus:
+
+  DESCRIPTION = <<EOT
+  This is a long description of my wonderful program and it can go on for
+  many many lines and have blank lines, indentations, etc.
+
+  The variable will consist of everything up to a line starting with the
+  hereis delimiter. The rest of that line is ignored
+  EOT
+
+Comments begin with # as per make.
+
+autosub also has a small number of functional variables which contain a space
+separating the function name from the parameter list, which is comma separated.
+This follows gnumake in its syntax.
+
+The following functions are supported:
+
+=head2 Functions
+
+=over 4
+
+=item $(foreach var,word list,evaluated text)
+
+This function iterates over each word in the word list and sets the variable
+to take the word. It then evaluates the evaluated text with the variable so
+assigned. So for example it is possible to create a group of variables:
+
+  PRODUCTS = autosub m4 make
+  PRODUCT_VARS=<<EOT
+  $(v)_SRC=$(v)/src
+  $(v)_TARGET=$(v).exe
+  EOT
+
+  PRODUCTVARS=$(foreach v,$(PRODUCTS),$(PRODUCT_VARS))
+
+If we expand this using:
+
+  @PRODUCTVARS@
+  make builds as @make_TARGET@ which is good
+
+we will get
+
+  autosub_SRC=autosub/src
+  autosub_TARGET=autosub.exe
+  m4_SRC=m4/src
+  m4_TARGET=m4.exe
+  make_SRC=make/src
+  make_TARGET=make.exe
+  make builds as make.exe which is good
+
+Notice how the combined textual result of the foreach can be stored
+in a variable. This is useful so that a whole list of macro definitions
+can be inserted into a file without having to reference each one.
+
+=item $(include filename)
+
+Reads in another file as a configuration file
+
+=item $(map test,key,value,key,value,...)
+
+Evaluates test and then evaluates each key in turn until it findes one that
+is equal to test. When it finds one, or finds an empty key (which is
+interpretted as being a default key) then it evaluates the following value
+and returns that.
+
+=item ($indent indent,string)
+
+Indents each line of string by inserting the indent string at the start of
+each line.
+
+=back
+
+=head2 Predefined variables
+
+A number of program defined variables are available for access. They all
+begin with a .
+
+=over 4
+
+=item .OS
+
+Returns a string containing the type of operating system (as returned by
+perl's $^O). Typical values are: MSWin32, linux
+
+=item .TAB
+
+Contains a tab character
+
+=back
+
+=head2 Late Evaluation
+
+autosub evaluates macros as late as possible, only when the value of a
+variable is needed will it be expanded.
+
+Consider the foreach function, what if we were to use the same example as in
+the description for foreach but were to reverse the lines in the template file
+what would the output be?
+
+  make builds as @make_TARGET@ which is good
+  @PRODUCTVARS@
+
+we would get
+
+  make builds as  which is good
+  autosub_SRC=autosub/src
+  autosub_TARGET=autosub.exe
+  m4_SRC=m4/src
+  m4_TARGET=m4.exe
+  make_SRC=make/src
+  make_TARGET=make.exe
+
+which isn't what we want. The problem is that when @make_TARGET@ is used the
+foreach function hasn't been expanded yet and so the make_TARGET variable hasn't
+been created. To force immediate or early evaluation of a variable or function
+so that an assignment is flattened to a value, the variable or function should
+be prefixed with a ! as in:
+
+  PRODUCTS = autosub m4 make
+  PRODUCT_VARS=<<EOT
+  $(v)_SRC=$(v)/src
+  $(v)_TARGET=$(v).exe
+  EOT
+
+  PRODUCTVARS=$(!foreach v,$(PRODUCTS),$(PRODUCT_VARS))
+
+Now the PRODUCTVARS will cause the foreach to be evaluated creating all the other
+variables and we don't necessarily need the output of the function at all.
+
+=head2 Miscellany
+
+=over 4
+
+=item .
+
+To output an @, use @@ in the output file
+
+=item .
+
+To store $() in a variable, use $$()
+
+=back

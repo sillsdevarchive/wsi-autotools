@@ -1,0 +1,4 @@
+@include templates/system.cfg@
+@foreach v,$(dir doc),doc/$(v)@
+@foreach v,$(dir font-source),font-source/$(v)@
+@foreach v,$(FONTS),$($(v)_TARGET)@

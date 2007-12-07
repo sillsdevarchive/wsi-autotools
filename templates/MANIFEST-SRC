@@ -1,0 +1,10 @@
+@include templates/system.cfg@
+@foreach v,$(dir docs),doc/$(v)@
+@foreach v,$(dir font-source),font-source/$(v)@
+@foreach v,$(FONTS),$($(v)_TARGET)@
+@foreach v,$(dir bin),bin/$(v)@
+@foreach v,$(dir templates,[^~]$),templates/$(v)@
+Makefile
+build.bat
+build
+@CONFIG_FILE@
