@@ -29,7 +29,7 @@ exe : $(PRODUCT)-$(VERSION).exe
 $(PRODUCT)-$(VERSION).exe : installer.nsi $(PKG_LIST)
 	makensis -O$(PRODUCT)_nsi.log installer.nsi
 
-installer.nsi : templates/installer.nsi Makefile
+installer.nsi : templates/templates/installer.nsi Makefile
 	$(AUTOSUB)
 
 dist : $(RELEASE_DIR).tar.gz
@@ -37,7 +37,7 @@ dist : $(RELEASE_DIR).tar.gz
 $(RELEASE_DIR).tar.gz : MANIFEST $(PKG_LIST)
 	@TARUP@
 
-MANIFEST : templates/MANIFEST Makefile
+MANIFEST : templates/templates/MANIFEST Makefile
 	$(AUTOSUB)
 
 dist-clean : clean extra-clean
@@ -49,5 +49,5 @@ clean :
 extra-clean :
 	-$(RM) installer.nsi Makefile *.zip *.exe
 
-Makefile : $(CONFIG_FILE) templates/system.cfg templates/Makefile
+Makefile : $(CONFIG_FILE) templates/system.cfg templates/templates/Makefile
 	$(AUTOSUB)

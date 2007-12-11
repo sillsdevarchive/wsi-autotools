@@ -58,7 +58,7 @@ if ($opt_d)
 	my ($vol, $dirs, $file) = File::Spec->splitpath($ARGV[0]);
 	my (@dirs) = File::Spec->splitdir($dirs);
 	push(@dirs, $file);
-	find({wanted => sub {add_file(scalar @dirs, $_, \%files);}, no_chdir => 1, follow => 1}, @dirs);
+	find({wanted => sub {add_file(scalar @dirs, $_, \%files);}, no_chdir => 1, follow => 1}, $ARGV[0]);
 }
 else
 { $files{$ARGV[0]} = $opt_o || ''; }
