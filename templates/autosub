@@ -7,7 +7,7 @@ use File::Spec;
 use Pod::Usage;
 
 $VERSION = 0.01;    #   MJPH    22-NOV-2007     Original
-my (@opt_c, $opt_d, $opt_h, $opt_o, @excludes);
+my (@opt_c, $opt_d, $opt_h, $opt_o, @excludes, %files);
 
 GetOptions( "config|c=s" => \@opt_c,
 			"outdir|d=s" => \$opt_d,
@@ -25,12 +25,15 @@ my (%funcs) = (
 	'and' => 'fnand',
 	'or' => 'fnor',
 	'osslash' => 'osslash',
-	'dir' => 'dir'
+	'dir' => 'dir',
+	'env' => 'env',
+	'match' => 'match'
 );
 
 my (%vars) = (
 	'.OS' => $^O,
 	'.TAB' => "\t",
+	'.NL' => $^O eq 'MSWin32' ? "\r\n" : "\n",
 	'.AT' => '@',
 	'.DP' => '$(',
 );
@@ -47,29 +50,32 @@ if ($opt_h)
 	exit;
 }
 
-unless (defined $opt_c)
-{
-	die <<'EOT';
-EOT
-}
+push (@excludes, '\\.svn', '\\.cvs', '\\.bzr');
 
 # just do files for now
-foreach (@opt_c)
-{ parse($_); }
-
 if ($opt_d)
 {
 	my ($vol, $dirs, $file) = File::Spec->splitpath($ARGV[0]);
 	my (@dirs) = File::Spec->splitdir($dirs);
 	push(@dirs, $file);
-	find({wanted => sub {process_file(scalar @dirs, $_);}, no_chdir => 1}, $ARGV[0]);
+	find({wanted => sub {add_file(scalar @dirs, $_, \%files);}, no_chdir => 1, follow => 1}, @dirs);
 }
 else
-{ process($ARGV[0], $opt_o || ''); }
+{ $files{$ARGV[0]} = $opt_o || ''; }
 
-sub process_file
+$vars{'.TEMPLATES'} = join(' ', sort keys %files);
+
+foreach (@opt_c)
+{ parse($_); }
+
+foreach $f (sort keys %files)
 {
-	my ($num, $f) = @_;
+	process($f, $files{$f});
+}
+
+sub add_file
+{
+	my ($num, $f, $files) = @_;
 	my ($x);
 	return unless (-f $f);
 	foreach $x (@excludes)
@@ -82,7 +88,28 @@ sub process_file
 	splice(@dirs, 0, $num);
 	$dirs = File::Spec->catdir($opt_d, @dirs);
 	$ofile = File::Spec->catpath($vd, $dirs, $file);
-	process($_, $ofile);
+	$files->{$_} = $ofile;
+}
+
+sub process
+{
+	my ($ifname, $ofname) = @_;
+	my ($ifh) = IO::File->new("< $ifname") || die "Can't open $ifname for reading";
+	my ($ofh);
+
+	if ($ofname)
+	{ $ofh = IO::File->new("> $ofname") || die "Can't open $ofname for writing"; }
+	else
+	{ $ofh = STDOUT; }
+
+#    print STDERR "$ifname\n";
+	while (<$ifh>)
+	{
+		s/\@(.*?)\@/$1 ? expand_var($1) : '@'/oge;
+		$ofh->print($_);
+	}
+	$ifh->close;
+	$ofh->close;
 }
 
 sub parse
@@ -103,9 +130,10 @@ sub parse_eval
 	chomp;
 	return if (m/^\s*[#]/o);     # comment
 	return if (m/^\s*$/o);
-	if (s/^\s*(\S+)\s*=\s*//o)  # simple assignment
+	if (s/^\s*(\S+?)\s*(\|?)=\s*//o)  # simple assignment
 	{
 		my ($var) = expand($1);
+		my ($or) = $2;
 		my ($val);
 		if ($fh && m/^<<\s*(\S+)/o)
 		{
@@ -122,30 +150,10 @@ sub parse_eval
 		elsif (m/^([^#]+)/o)
 		{ $val = $1; }
 
-		$vars{$var} = expand_partial($val);
+		$vars{$var} = expand_partial($val) unless ($or and defined $vars{$var});
 	}
 	else
 	{ expand_partial($_); }
-}
-
-sub process
-{
-	my ($ifname, $ofname) = @_;
-	my ($ifh) = IO::File->new("< $ifname") || die "Can't open $ifname for reading";
-	my ($ofh);
-
-	if ($ofname)
-	{ $ofh = IO::File->new("> $ofname") || die "Can't open $ofname for writing"; }
-	else
-	{ $ofh = STDOUT; }
-
-	while (<$ifh>)
-	{
-		s/\@(.*?)\@/$1 ? expand_var($1) : '@'/oge;
-		$ofh->print($_);
-	}
-	$ifh->close;
-	$ofh->close;
 }
 
 sub expand
@@ -262,6 +270,45 @@ sub evalstr
 	return '';
 }
 
+sub fnand
+{
+	my (@parms) = @_;
+	my ($s, $p);
+
+	foreach $p (@parms)
+	{
+		$s = expand($p);
+		return '' unless ($s);
+	}
+	return $s;
+}
+
+sub dir
+{
+	my ($s, @includes) = @_;
+	my ($str) = expand($s);
+	my (@list, $f, @res);
+
+	opendir(DIR, $str) || return '';
+	@list = grep {-f "$str/$_"} readdir(DIR);
+	if (@includes)
+	{
+		foreach $f (@list)
+		{ push (@res, $f) if (grep {$f =~ m/$_/} @includes); }
+	}
+	else
+	{ @res = @list; }
+
+	return join (" ", @res);
+}
+
+sub env
+{
+	my ($s) = @_;
+	my ($str) = expand($s);
+	return $ENV{$str};
+}
+
 sub foreach
 {
 	my ($var, $range, $exp, $nonl) = @_;
@@ -292,6 +339,16 @@ sub include
 	return '';
 }
 
+sub indent
+{
+	my ($indent, $str) = @_;
+	my ($s) = expand($str);
+	my ($i) = expand($indent);
+
+	$s =~ s/(^|\n)(?!$)/$1$i/og;
+	$s;
+}
+
 sub mapstr
 {
 	my ($str, @hash) = @_;
@@ -306,28 +363,16 @@ sub mapstr
 	}
 }
 
-sub indent
+sub match
 {
-	my ($indent, $str) = @_;
+	my ($str, $match) = @_;
 	my ($s) = expand($str);
-	my ($i) = expand($indent);
+	my ($m) = expand($match);
 
-	$s =~ s/(^|\n)(?!$)/$1$i/og;
-	$s;
+	return $s if ($s =~ m/$m/);
+	return '';
 }
 
-sub fnand
-{
-	my (@parms) = @_;
-	my ($s, $p);
-
-	foreach $p (@parms)
-	{
-		$s = expand($p);
-		return '' unless ($s);
-	}
-	return $s;
-}
 
 sub fnor
 {
@@ -351,18 +396,6 @@ sub osslash
 	$str;
 }
 
-sub dir
-{
-	my ($s, @includes) = @_;
-	my ($str) = expand($s);
-	my (@list, $f);
-
-	opendir(DIR, $str) || return '';
-	@list = grep {-f "$str/$_"} readdir(DIR);
-	foreach $f (@includes)
-	{ @list = grep {m/$f/} @list; }
-	return join (" ", @list);
-}
 __END__
 
 =head1 TITLE
@@ -371,7 +404,7 @@ autosub - simple macro expansion utility
 
 =head1 SYNOPSIS
 
-	autosub -c config [-d dir] [-o file/dir] [infile]
+	autosub [-c config]+ [-d dir] [-o file/dir] [-x exclude]* [infile]
 
 Using declarations in the config file does simple string macro substitution
 on the input file to create either the output file or output to stdout. If
@@ -380,10 +413,11 @@ files relative to -o dir or . Macro replacements are between @@
 
 =head1 OPTIONS
 
-  -c config     Configuration file declaring macro variables
+  -c config     Configuration file declaring macro variables. Multiple allowed
   -d dir        Template directory to work through
   -h            Print out complete help
   -o file/dir   Output to a file or directory according to -d
+  -x regexp     Files matching the regexp are not processed. Multiple allowed
 
 =head1 DESCRIPTION
 
@@ -433,6 +467,15 @@ declared using hereis syntax. Thus:
   hereis delimiter. The rest of that line is ignored
   EOT
 
+In situations where you want to set a variable only if it has not already been
+set. Then there is the syntax:
+
+  FONT_TARGET |= $(PRODUCT).ttf
+
+This allows one to write configuration files that can be overridden. And the
+overriding usually has to happen first in order that the generic configuration
+file can take action according to what the overriding configuration file enables.
+
 Comments begin with # as per make.
 
 autosub also has a small number of functional variables which contain a space
@@ -444,6 +487,21 @@ The following functions are supported:
 =head2 Functions
 
 =over 4
+
+=item $(and str,...)
+
+The and function takes a list of one or more strings and returns empty string
+if any of them are empty, otherwise it returns the last one
+
+=item $(dir, str, [filter,...])
+
+Returns a non-recursive list of all the files in str (the first parameter).
+If there are subsequent parameters then only filenames that match one of
+those parameters will be included in the space separated final list.
+
+=item $(env str)
+
+Returns the value of the given environment string
 
 =item $(foreach var,word list,evaluated text)
 
@@ -482,6 +540,11 @@ can be inserted into a file without having to reference each one.
 
 Reads in another file as a configuration file
 
+=item ($indent indent,string)
+
+Indents each line of string by inserting the indent string at the start of
+each line.
+
 =item $(map test,key,value,key,value,...)
 
 Evaluates test and then evaluates each key in turn until it findes one that
@@ -489,10 +552,15 @@ is equal to test. When it finds one, or finds an empty key (which is
 interpretted as being a default key) then it evaluates the following value
 and returns that.
 
-=item ($indent indent,string)
+=item $(or str,...)
 
-Indents each line of string by inserting the indent string at the start of
-each line.
+or takes a list of 1 or more strings and returns the first one that is
+not empty.
+
+=item $(osslash str)
+
+Used to convert forward slashes to backslashes so that Windows programs
+like derived make dependencies work.
 
 =back
 
@@ -503,6 +571,21 @@ begin with a .
 
 =over 4
 
+=item .AT
+
+Contains an @ character. Useful for when you want an @ in the middle of
+a macro expansion.
+
+=item .DP
+
+Returns the string C<$(> which has the advantage, due to late evaluation
+of holding it's value such that the contents will never be interpreted.
+[Is this true? Need to test this]
+
+=item .NL
+
+Returns an operating specific newline
+
 =item .OS
 
 Returns a string containing the type of operating system (as returned by
@@ -511,6 +594,11 @@ perl's $^O). Typical values are: MSWin32, linux
 =item .TAB
 
 Contains a tab character
+
+=item .TEMPLATES
+
+This contains a space separated list of source files that autosub will
+have processed.
 
 =back
 

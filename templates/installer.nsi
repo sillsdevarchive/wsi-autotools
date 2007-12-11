@@ -1,13 +1,11 @@
 ;NSIS Modern User Interface
-;Padauk Font NSIS Installer script
-;Written by Keith Stribley & Martin Hosken
+;@PRODUCT@ Font NSIS Installer script
+;Written by Martin Hosken
 
 ; This line is included to pull in the MS system.dll plugin rather than the
-; stubbed debian one. You should get the MS system.dll and put it in the bin/
+; stubbed debian one. You should get the MS system.dll and put it in the templates/
 ; dir or comment out this line if building on windows
-!addplugindir bin
-
-@include templates/system.cfg@
+!addplugindir templates
 
 ; Some useful definitions that may need changing for different font versions
 !ifndef VERSION
@@ -94,7 +92,7 @@ Function un.TranslateFontName
 	goto ${Index}
   End-1025:
 
-  StrCmp $LANGUAGE 1028 0 End-1028 ; Chinese (Traditional) by Kii Ali <kiiali@cpatch.org>
+  StrCmp $LANGUAGE 1028 0 End-1028 ; Chinese (Traditional) by Kii Ali <kiiali@@cpatch.org>
 	Push "¿ù»~ªºŠr«¬ª©¥»"
 	Push "¹ïÀ³ÀÉ®×Šì§}¿ù»~: %u"
 	Push "¹ïÀ³ÀÉ®×¿ù»~: %u"
@@ -104,7 +102,7 @@ Function un.TranslateFontName
 	goto ${Index}
   End-1028:
 
-  StrCmp $LANGUAGE 2052 0 End-2052 ; Chinese (Simplified) by Kii Ali <kiiali@cpatch.org>
+  StrCmp $LANGUAGE 2052 0 End-2052 ; Chinese (Simplified) by Kii Ali <kiiali@@cpatch.org>
 	Push "ŽíÎóµÄ×ÖÌå°æ±Ÿ"
 	Push "Ó³ÉäÎÄŒþµØÖ·ŽíÎó: %u"
 	Push "Ó³ÉäÎÄŒþŽíÎó: %u"
@@ -134,7 +132,7 @@ Function un.TranslateFontName
 	goto ${Index}
   End-1034:
 
-  StrCmp $LANGUAGE 1071 0 End-1071 ; Macedonian by Sasko Zdravkin <wingman2083@yahoo.com>
+  StrCmp $LANGUAGE 1071 0 End-1071 ; Macedonian by Sasko Zdravkin <wingman2083@@yahoo.com>
 	Push "Ïîãðåøíà âåðçèŒà íà Ôîíòîò"
 	Push "ÌàïèðàíàòàÄàòîòåêà Ãðåøêà íà àäðåñàòà: %u"
 	Push "ÌàïèðàíàòàÄàòîòåêà Ãðåøêà: %u"
@@ -276,26 +274,17 @@ ${Index}:
 
   ;Name and file
   Name "${FONTNAME} Font (${VERSION})"
-  Caption "A Graphite enabled Myanmar Font"
+  Caption "@DESC_SHORT@"
 
   OutFile "${FONTNAME}-${VERSION}.exe"
   ;OutFile "${FONT_REG_FILE}"
   ;OutFile "${FONT_BOLD_FILE}"
   InstallDir $PROGRAMFILES\${INSTALL_SUFFIX}
 
-
   ;Get installation folder from registry if available
   InstallDirRegKey HKLM "Software\${INSTALL_SUFFIX}" ""
 
   SetCompressor lzma
-
-  VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "${FONTNAME}"
-  VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductVersion" "${VERSION}"
-  VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "${VERSION}"
-  VIAddVersionKey /LANG=${LANG_ENGLISH} "Comments" "@DESCRIPTION_SHORT@"
-  VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "${FONTNAME} font installer"
-  VIProductVersion "${VERSION}"
-
 ;--------------------------------
 ;Interface Settings
 
@@ -305,7 +294,7 @@ ${Index}:
 ;Pages
 
   !insertmacro MUI_PAGE_WELCOME
-  !insertmacro MUI_PAGE_LICENSE "doc/OFL.txt"
+  @and $(LICENSE),!insertmacro MUI_PAGE_LICENSE "$(LICENSE)"@
   !insertmacro MUI_PAGE_COMPONENTS
   !insertmacro MUI_PAGE_DIRECTORY
   !insertmacro MUI_PAGE_INSTFILES
@@ -326,6 +315,14 @@ ${Index}:
 ;Languages
 
   !insertmacro MUI_LANGUAGE "English"
+
+  VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "${FONTNAME}"
+  VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductVersion" "${VERSION}"
+  VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "${VERSION}"
+  VIAddVersionKey /LANG=${LANG_ENGLISH} "Comments" "@DESC_SHORT@"
+  VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "${FONTNAME} font installer"
+  @and $(COPYRIGHT),VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "$(COPYRIGHT)"@
+  VIProductVersion @WINDOWS_VERSION@
 
 ;--------------------------------
 ;Installer Sections
@@ -379,7 +376,8 @@ Section "!${FONTNAME} Font" SecFont
 	Goto BranchDone
 
   BranchTestRem:
-	IfFileExists "$WINDIR\Fonts\${FONT_REG_FILE}" 0 BranchNoExist
+	@foreach f,$(FONTS),IfFileExists "$WINDIR/Fonts/${FONT_$(f)_FILE}" 0 BranchNoExist@
+;    IfFileExists "$WINDIR\Fonts\${FONT_REG_FILE}" 0 BranchNoExist
 
 	MessageBox MB_YESNO|MB_ICONQUESTION "Would you like to overwrite existing ${FONTNAME} fonts?" /SD IDYES IDYES BranchOverwrite ; skipped if file doesn't exist
 
@@ -397,7 +395,8 @@ Section "!${FONTNAME} Font" SecFont
 SectionEnd
 
 Section -StartMenu
-  File "doc/OFL.txt"
+;  File "doc/OFL.txt"
+  @foreach f,$(DOCS),File "/ONAME=$OUTDIR/$(f)" "doc/$(f)"@
   !insertmacro MUI_STARTMENU_WRITE_BEGIN "FONT"
   SetShellVarContext all
   CreateDirectory $SMPROGRAMS\${MUI_STARTMENUPAGE_FONT_VARIABLE}
@@ -406,10 +405,9 @@ Section -StartMenu
 	CreateDirectory $SMPROGRAMS\${MUI_STARTMENUPAGE_FONT_VARIABLE}
 
   createIcons:
+	@foreach f,$(DOCS),CreateShortCut $SMPROGRAMS/${MUI_STARTMENUPAGE_FONT_VARIABLE}/$(f) $OUTDIR/$(f)@
 	CreateShortCut $SMPROGRAMS\${MUI_STARTMENUPAGE_FONT_VARIABLE}\Uninstall.lnk \
 	  $INSTDIR\Uninstall.exe
-	CreateShortCut $SMPROGRAMS\${MUI_STARTMENUPAGE_FONT_VARIABLE}\License.lnk \
-	  $INSTDIR\OFL.txt
   !insertmacro MUI_STARTMENU_WRITE_END
 SectionEnd
 
@@ -419,7 +417,7 @@ Section "Documentation" SecSrc
   SetOutPath "$INSTDIR"
   SetOverwrite ifnewer
   ;ADD YOUR OWN FILES HERE...
-  File "${SRC_ARCHIVE}"
+  @and $(EXTRA_DIST),$(foreach f,$(EXTRA_DIST),File "/ONAME=$OUTDIR/$(f)" "$(f)")@
 
 SectionEnd
 
@@ -428,14 +426,14 @@ SectionEnd
 ;Descriptions
 
   ;Language strings
-  LangString DESC_SecFont ${LANG_ENGLISH} "Install the ${FONTNAME} font (version ${VERSION}). ${FONTNAME} is a Myanmar font compliant to Unicode 5.1. It uses Graphite for smart rendering."
-  LangString DESC_SecSrc ${LANG_ENGLISH} "Install the source font and Graphite code for ${FONTNAME} (version ${VERSION}). You only need this if you are a font developer."
+  LangString DESC_SecFont ${LANG_ENGLISH} "Install the ${FONTNAME} font (version ${VERSION}). @DESC_SHORT@"
+;  LangString DESC_SecSrc ${LANG_ENGLISH} "Install the source font and Graphite code for ${FONTNAME} (version ${VERSION}). You only need this if you are a font developer."
 
 
   ;Assign language strings to sections
   !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecFont} $(DESC_SecFont)
-	!insertmacro MUI_DESCRIPTION_TEXT ${SecSrc} $(DESC_SecSrc)
+;    !insertmacro MUI_DESCRIPTION_TEXT ${SecSrc} $(DESC_SecSrc)
   !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 ;--------------------------------

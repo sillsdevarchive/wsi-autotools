@@ -2,59 +2,52 @@
 
 PRODUCT=@PRODUCT@
 VERSION=@VERSION@
-TTF_VERSION=@TTF_VERSION@
 FONTS=@FONTS@
 MAKE_VOLT_PARAMS=@MAKE_VOLT_PARAMS@
 MAKE_GDL_PARAMS=@MAKE_GDL_PARAMS@
-padauk_TARGET = Padauk.ttf
-padaukbold_TARGET = PadaukBold.ttf
-@include templates/system.cfg@
 @FONT_VARS@
 
 RELEASE_DIR=ttf-sil-$(PRODUCT)-$(VERSION)
 CONFIG_FILE=@CONFIG_FILE@
-
+AUTOSUB=@AUTOSUB@
 RM=@RM@
 CP=@CP@
 
-.PHONY: all exe dist dist-src clean dist-clean extra-clean
+PKG_LIST=@foreach f,$(DOCS),doc/$(f),1@ @foreach f,$(EXTRA_DIST),$(f),nonl@
+
+.PHONY: all exe dist clean dist-clean extra-clean
 .SUFFIXES:
 
-all :: @osslash font-source/myanmar5.html@
+all ::
 
-@osslash font-source/myanmar5.html : font-source/myanmar5.gdl@
-	perl bin/make_doc font-source/myanmar5.gdl > font-source/myanmar5.html
+@and $(EXTRA_TARGET),$(ALL_template)@
 
 @osslash $(foreach v,$(FONTS),$(PROGRAM_template))@
 
 exe : $(PRODUCT)-$(VERSION).exe
 
-$(PRODUCT)-$(VERSION).exe : installer.nsi $(RELEASE_DIR).zip
+$(PRODUCT)-$(VERSION).exe : installer.nsi $(PKG_LIST)
 	makensis -O$(PRODUCT)_nsi.log installer.nsi
 
-installer.nsi : templates/installer.nsi
-	$(AUTO_SUB)
+installer.nsi : templates/installer.nsi Makefile
+	$(AUTOSUB)
 
-dist : $(RELEASE_DIR).zip
+dist : $(RELEASE_DIR).tar.gz
 
-$(RELEASE_DIR).zip : MANIFEST all
-	-$(RM) $@@
-	7za a -tzip $@@ @@MANIFEST
+$(RELEASE_DIR).tar.gz : MANIFEST $(PKG_LIST)
+	@TARUP@
 
-dist-src : $(RELEASE_DIR)-src.zip
-
-$(RELEASE_DIR)-src.zip : MANIFEST-SRC all
-	-$(RM) $@@
-	7za a -tzip $@@ @@MANIFEST-SRC
+MANIFEST : templates/MANIFEST Makefile
+	$(AUTOSUB)
 
 dist-clean : clean extra-clean
 
 clean :
-	-$(RM) $(PRODUCT)_nsi.log gdlerr.txt
-	-$(RM) @foreach v,$(FONTS),$($(v)_VTP) $($(v)_GDL),nonl@
+	@@-$(RM) $(PRODUCT)_nsi.log gdlerr.txt
+	@foreach v,$(FONTS),$(and $(or $($(v)_VTP),$($(v)_GDL)),$(.TAB)$(.AT)-$(RM) $($(v)_VTP) $($(v)_GDL))@
 
 extra-clean :
 	-$(RM) installer.nsi Makefile *.zip *.exe
 
 Makefile : $(CONFIG_FILE) templates/system.cfg templates/Makefile
-	$(AUTO_SUB)
+	$(AUTOSUB)

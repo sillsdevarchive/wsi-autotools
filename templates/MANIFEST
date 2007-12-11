@@ -1,4 +1,18 @@
 @include templates/system.cfg@
-@foreach v,$(dir doc),doc/$(v)@
-@foreach v,$(dir font-source),font-source/$(v)@
+@foreach v,$(DOCS),doc/$(v)@
 @foreach v,$(FONTS),$($(v)_TARGET)@
+@foreach v,$(FONTS),$($(v)_SRC)@
+@foreach v,$(FONTS),$($(v)_GDL_SHARED)@
+@foreach v,$(FONTS),$(foreach f,$($(v)_GDL_DEPENDS),$(f))@
+@foreach v,$(FONTS),$($(v)_VTP_SRC)@
+@foreach v,$(FONTS),$(foreach f,$($(v)_VTP_DEPENDS),$(f))@
+@foreach v,$(FONTS),$($(v)_AP)@
+@foreach v,$(.TEMPLATES),$(v)@
+templates/autosub
+templates/system.cfg
+Makefile
+build.bat
+build
+@CONFIG_FILE@
+@EXTRA_DIST@
+@EXTRA_SRC_DIST@
