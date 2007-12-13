@@ -6,6 +6,10 @@ use File::Find;
 use File::Spec;
 use Pod::Usage;
 
+use strict;
+
+my ($VERSION, $re_brack);
+
 $VERSION = 0.01;    #   MJPH    22-NOV-2007     Original
 my (@opt_c, $opt_d, $opt_h, $opt_o, @excludes, %files);
 
@@ -15,7 +19,7 @@ GetOptions( "config|c=s" => \@opt_c,
 			"outfile|o=s" => \$opt_o,
 			"exclude|x=s" => \@excludes);
 
-my ($re_brack) = qr{(?:(?>[^()]+)|\((??{$re_brack})\))+};
+$re_brack = qr{(?:(?>[^()]+)|\((??{$re_brack})\))+};
 my (%funcs) = (
 	'foreach' => 'foreach',
 	'eval' => 'evalstr',
@@ -68,7 +72,7 @@ $vars{'.TEMPLATES'} = join(' ', sort keys %files);
 foreach (@opt_c)
 { parse($_); }
 
-foreach $f (sort keys %files)
+foreach my $f (sort keys %files)
 {
 	process($f, $files{$f});
 }
@@ -100,12 +104,16 @@ sub process
 	if ($ofname)
 	{ $ofh = IO::File->new("> $ofname") || die "Can't open $ofname for writing"; }
 	else
-	{ $ofh = STDOUT; }
+	{ $ofh = IO::File->new(">& STDOUT"); }
 
 #    print STDERR "$ifname\n";
+	my ($line, $error);
 	while (<$ifh>)
 	{
-		s/\@(.*?)\@/$1 ? expand_var($1) : '@'/oge;
+		my (%context, $error);
+		$line++;
+		$error = "$ifname: line $line";
+		s/\@(.*?)\@/$1 ? expand_var($1, \%context, $error) : '@'/oge;
 		$ofh->print($_);
 	}
 	$ifh->close;
@@ -115,16 +123,21 @@ sub process
 sub parse
 {
 	my ($fname) = @_;
-	my ($fh) = IO::File->new("< $fname") || die "Can't open $fname for reading";
+	my ($fh) = IO::File->new("< $fname") || return undef;
+	my ($line, $error);
 
 	while (<$fh>)
-	{ parse_eval($_, $fh); }
+	{
+		$line++;
+		$error = "$fname: line $line";
+		parse_eval($_, $fh, $error);
+	}
 	$fh->close;
 }
 
 sub parse_eval
 {
-	my ($str, $fh, $exp) = @_;
+	my ($str, $fh, $error) = @_;
 
 	$_ = $str;
 	chomp;
@@ -132,7 +145,8 @@ sub parse_eval
 	return if (m/^\s*$/o);
 	if (s/^\s*(\S+?)\s*(\|?)=\s*//o)  # simple assignment
 	{
-		my ($var) = expand($1);
+		my (%context) = ($1 => 1);
+		my ($var) = expand($1, \%context, $error);
 		my ($or) = $2;
 		my ($val);
 		if ($fh && m/^<<\s*(\S+)/o)
@@ -150,7 +164,7 @@ sub parse_eval
 		elsif (m/^([^#]+)/o)
 		{ $val = $1; }
 
-		$vars{$var} = expand_partial($val) unless ($or and defined $vars{$var});
+		$vars{$var} = expand_partial($val, $error) unless ($or and defined $vars{$var});
 	}
 	else
 	{ expand_partial($_); }
@@ -158,7 +172,7 @@ sub parse_eval
 
 sub expand
 {
-	my ($str) = @_;
+	my ($str, $context, $error) = @_;
 	my ($res, $match);
 
 	while ($str =~ s/^(.*?)(\$\$\(|\$\()//os)
@@ -169,7 +183,7 @@ sub expand
 		if ($end eq '$$(')
 		{ $res .= '$(' . $match . ')'; }
 		else
-		{ $res .= expand_var($match); }
+		{ $res .= expand_var($match, $context, $error); }
 	}
 	$res .= $str;
 	$res;
@@ -177,15 +191,15 @@ sub expand
 
 sub expand_partial
 {
-	my ($str) = @_;
+	my ($str, $error) = @_;
 
-	my ($res, $match);
+	my ($res, $match, %context);
 
 	while ($str =~ s/^(.*?)\$\(\!//os)
 	{
 		$res .= $1;
 		($str, $match) = match_parens($str);
-		$res .= expand_var($match);
+		$res .= expand_var($match, \%context, $error);
 	}
 	$res .= $str;
 	$res;
@@ -213,7 +227,7 @@ sub match_parens
 
 sub expand_var
 {
-	my ($var) = @_;
+	my ($var, $context, $error) = @_;
 	my (@parms);
 
 # put var functions in here
@@ -254,16 +268,31 @@ sub expand_var
 		if (defined $funcs{$func})
 		{ return &{$funcs{$func}}(@parms); }
 		else
-		{ die "Unknown function $func"; }
+		{ error("Unknown function $func", $error); }
 	}
 	else
-	{ return expand($vars{expand($var)}); }
+	{
+		my ($key) = expand($var, $context, $error);
+		if (defined $context->{$key})
+		{ error("Recursive expansion of $key", $error); }
+		$context->{$key}++;
+		return expand($vars{$key}, $context, $error);
+	}
+}
+
+sub error
+{
+	my ($str, $error) = @_;
+
+	print STDERR "$str in $error\n";
+	exit(1);
 }
 
 # functions
 sub evalstr
 {
 	my ($s, $exp) = @_;
+	my ($t);
 	my (@lines) = split(/\r?\n/, $s);
 	foreach $t (@lines)
 	{ parse_eval($t); }
@@ -640,6 +669,39 @@ be prefixed with a ! as in:
 
 Now the PRODUCTVARS will cause the foreach to be evaluated creating all the other
 variables and we don't necessarily need the output of the function at all.
+
+One problem with late evaluation is recursive definitions. For example, consider
+the following definitions:
+
+  FONTS=abc.ttf
+  FONTS=$(FONTS) xyz.ttf
+
+One would expect a result of FONTS=abc.ttf xyz.ttf. But that isn't what happens.
+Due to late evaluation, we get:
+
+  FONTS=$(FONTS) xyz.ttf xyz.ttf
+
+which expands to
+
+  FONTS=$(FONTS) xyz.ttf xyz.ttf xyz.ttf
+
+and so on infinitely. Thankfully autosub catches this and will give an error
+when such a thing occurs.
+
+=head2 Early evaluation
+
+It is also possible to have a variable expanded immediately at the point it is
+encountered and not when it is used. For this we use:
+
+  $(!var)
+
+Thus the example from the previous section which would recurse, could be
+rewritten:
+
+  FONTS=abc.ttf
+  FONTS=$(!FONTS) xyz.ttf
+
+and now @FONTS@ would expand to abc.ttf xyz.ttf as expected.
 
 =head2 Miscellany
 

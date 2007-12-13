@@ -1,0 +1,4 @@
+
+ . add make debian target to build debian/ from templates
+	and don't add debian/ to MANIFEST
+ . create FONTLOG -> fontlog.cfg converter
