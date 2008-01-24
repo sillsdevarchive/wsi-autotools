@@ -1,1 +1,1 @@
-@@perl bin/autosub -c @CONFIG_FILE@ -c templates/system.cfg -d . -x .cfg -x ~ -x autosub /templates
+perl bin/autosub -c @CONFIG_FILE@ -c templates/system.cfg -d . -x ~ -x debian templates/templates

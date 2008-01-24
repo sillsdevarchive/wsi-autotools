@@ -20,13 +20,17 @@ PKG_LIST=@foreach f,$(DOCS),doc/$(f),1@ @foreach f,$(EXTRA_DIST),$(f),nonl@
 
 all ::
 
-@and $(EXTRA_TARGET),$(ALL_template)@
+debug : DEBUG=1
+
+debug : all
+
+@and $(or $(EXTRA_RULES),$(EXTRA_TARGETS)),$(ALL_template)@
 
 @osslash $(foreach v,$(FONTS),$(PROGRAM_template))@
 
 exe : $(PRODUCT)-$(VERSION).exe
 
-$(PRODUCT)-$(VERSION).exe : installer.nsi $(PKG_LIST)
+$(PRODUCT)-$(VERSION).exe : all installer.nsi $(PKG_LIST)
 	makensis -O$(PRODUCT)_nsi.log installer.nsi
 
 installer.nsi : templates/templates/installer.nsi Makefile

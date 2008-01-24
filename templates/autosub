@@ -21,7 +21,7 @@ GetOptions( "config|c=s" => \@opt_c,
 
 $re_brack = qr{(?:(?>[^()]+)|\((??{$re_brack})\))+};
 my (%funcs) = (
-	'foreach' => 'foreach',
+	'foreach' => 'fn_foreach',
 	'eval' => 'evalstr',
 	'include' => 'include',
 	'map' => 'mapstr',
@@ -31,7 +31,9 @@ my (%funcs) = (
 	'osslash' => 'osslash',
 	'dir' => 'dir',
 	'env' => 'env',
-	'match' => 'match'
+	'match' => 'match',
+	'shell' => 'fn_exec',
+	'exist' => 'fn_exist'
 );
 
 my (%vars) = (
@@ -164,7 +166,7 @@ sub parse_eval
 		elsif (m/^([^#]+)/o)
 		{ $val = $1; }
 
-		$vars{$var} = expand_partial($val, $error) unless ($or and defined $vars{$var});
+		$vars{$var} = expand_partial($val, $error) unless ($or and $vars{$var});
 	}
 	else
 	{ expand_partial($_); }
@@ -182,6 +184,8 @@ sub expand
 		($str, $match) = match_parens($str);
 		if ($end eq '$$(')
 		{ $res .= '$(' . $match . ')'; }
+		elsif ($match eq '')
+		{ $res .= $end; }
 		else
 		{ $res .= expand_var($match, $context, $error); }
 	}
@@ -266,17 +270,22 @@ sub expand_var
 			push (@parms, $res);
 		}
 		if (defined $funcs{$func})
-		{ return &{$funcs{$func}}(@parms); }
+		{
+			no strict "refs";
+			return &{$funcs{$func}}(@parms);
+		}
 		else
 		{ error("Unknown function $func", $error); }
 	}
 	else
 	{
 		my ($key) = expand($var, $context, $error);
-		if (defined $context->{$key})
+		if ($context->{$key})
 		{ error("Recursive expansion of $key", $error); }
 		$context->{$key}++;
-		return expand($vars{$key}, $context, $error);
+		my ($res) = expand($vars{$key}, $context, $error);
+		$context->{$key}--;
+		return $res;
 	}
 }
 
@@ -338,7 +347,28 @@ sub env
 	return $ENV{$str};
 }
 
-sub foreach
+sub fn_exec
+{
+	my ($str) = @_;
+	my ($s) = expand($str);
+	my ($res) = scalar `$s`;
+	$res =~ s/^\s*//o;
+	$res =~ s/\s*$//o;
+	$res;
+}
+
+sub fn_exist
+{
+	my ($str, $replace) = @_;
+	my ($s) = expand($str);
+
+	if (-e $s)
+	{ return expand($replace); }
+	'';
+}
+
+
+sub fn_foreach
 {
 	my ($var, $range, $exp, $nonl) = @_;
 	my (@words) = split(' ', expand($range));
@@ -569,7 +599,7 @@ can be inserted into a file without having to reference each one.
 
 Reads in another file as a configuration file
 
-=item ($indent indent,string)
+=item $(indent indent,string)
 
 Indents each line of string by inserting the indent string at the start of
 each line.
@@ -590,6 +620,11 @@ not empty.
 
 Used to convert forward slashes to backslashes so that Windows programs
 like derived make dependencies work.
+
+=item $(shell str)
+
+Executes str as a shell command and returns the textual value. Whitespace is
+stripped from the start and end of the string.
 
 =back
 
