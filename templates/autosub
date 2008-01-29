@@ -301,10 +301,13 @@ sub error
 sub evalstr
 {
 	my ($s, $exp) = @_;
-	my ($t);
-	my (@lines) = split(/\r?\n/, $s);
-	foreach $t (@lines)
-	{ parse_eval($t); }
+	my ($fh);
+	open($fh, "<", \$s);
+	while (<$fh>)
+	{
+		parse_eval($_, $fh);
+	}
+	$fh->close;
 	return '';
 }
 

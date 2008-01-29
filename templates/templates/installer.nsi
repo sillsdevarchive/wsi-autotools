@@ -5,7 +5,7 @@
 ; This line is included to pull in the MS system.dll plugin rather than the
 ; stubbed debian one. You should get the MS system.dll and put it in the templates/
 ; dir or comment out this line if building on windows
-!addplugindir templates
+!addplugindir templates/nsis
 
 ; Some useful definitions that may need changing for different font versions
 !ifndef VERSION
@@ -23,6 +23,7 @@
 ;-----------------------------
 ; Macros for Font installation
 ;-----------------------------
+!addincludedir templates/nsis
 !include FileFunc.nsh
 !include FontRegAdv.nsh
 !include FontName.nsh
@@ -396,7 +397,7 @@ SectionEnd
 
 Section -StartMenu
 ;  File "doc/OFL.txt"
-  @foreach f,$(DOCS),File "/ONAME=$OUTDIR/$(f)" "doc/$(f)"@
+  @foreach f,$(DOCS),File "/ONAME=$(osslash $OUTDIR/$(f))" "$(osslash doc/$(f))"@
   !insertmacro MUI_STARTMENU_WRITE_BEGIN "FONT"
   SetShellVarContext all
   CreateDirectory $SMPROGRAMS\${MUI_STARTMENUPAGE_FONT_VARIABLE}
@@ -417,7 +418,7 @@ Section "Documentation" SecSrc
   SetOutPath "$INSTDIR"
   SetOverwrite ifnewer
   ;ADD YOUR OWN FILES HERE...
-  @and $(EXTRA_DIST),$(foreach f,$(EXTRA_DIST),File "/ONAME=$OUTDIR/$(f)" "$(f)")@
+  @and $(EXTRA_DIST),$(foreach f,$(EXTRA_DIST),File "/ONAME=$(osslash $OUTDIR/$(f))" "$(osslash $(f))")@
 
 SectionEnd
 
