@@ -10,9 +10,10 @@
 @foreach v,$(.TEMPLATES),$(v)@
 templates/autosub
 templates/system.cfg
+templates/build
+templates/build.bat
+templates/System.dll
 Makefile
-build.bat
-build
 @CONFIG_FILE@
 @EXTRA_DIST@
 @EXTRA_SRC_DIST@
