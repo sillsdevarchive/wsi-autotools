@@ -84,7 +84,7 @@ foreach my $f (sort keys %files)
 sub add_file
 {
 	my ($num, $f, $files) = @_;
-	my ($x);
+	my ($x, $ldirs);
 	return unless (-f $f);
 	foreach $x (@excludes)
 	{ return if ($f =~ m/$x/); }
@@ -94,6 +94,13 @@ sub add_file
 	my ($ofile);
 	pop(@dirs); # remove final /
 	splice(@dirs, 0, $num);
+	$ldirs = $opt_d;
+	foreach (@dirs)
+	{
+		$ldirs= File::Spec->catdir($opt_d, $ldirs, $_);
+		my ($path) = File::Spec->catpath($vd, $ldirs);
+		mkdir $path unless (-d $path);
+	}
 	$dirs = File::Spec->catdir($opt_d, @dirs);
 	$ofile = File::Spec->catpath($vd, $dirs, $file);
 	$files->{$_} = $ofile;
@@ -369,7 +376,7 @@ sub fn_exist
 	my ($s) = expand($str);
 
 	if (-e $s)
-	{ return expand($replace); }
+	{ return $replace ? expand($replace) : $s; }
 	'';
 }
 
@@ -567,6 +574,10 @@ those parameters will be included in the space separated final list.
 =item $(env str)
 
 Returns the value of the given environment string
+
+=item $(exist file, [replace])
+
+If file exists then return either the replace evaluation or file.
 
 =item $(foreach var,word list,evaluated text [, nonl])
 

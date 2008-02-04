@@ -1,11 +1,11 @@
 #!/usr/bin/make -f
 
 build: build-stamp
-build-stamp:
+build-stamp: Makefile
 	$(MAKE)
 	touch build-stamp
 
-clean:
+clean: Makefile
 	dh_testdir
 	dh_testroot
 	$(MAKE) clean
@@ -36,5 +36,8 @@ binary-indep: build install
 	dh_builddeb
 
 binary: binary-indep binary-arch
+
+Makefile : templates/templates/Makefile
+	templates/build @CONFIG_FILE@
 
 .PHONY: build clean install binary-arch binary-indep binary

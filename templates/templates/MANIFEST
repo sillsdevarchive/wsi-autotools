@@ -13,7 +13,6 @@ templates/autosub
 templates/system.cfg
 templates/build
 templates/build.bat
-Makefile
 @CONFIG_FILE@
 @EXTRA_DIST@
-@EXTRA_SRC_DIST@
+@foreach f,$(EXTRA_SRC_DIST),$(f)@
