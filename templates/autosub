@@ -42,6 +42,7 @@ my (%vars) = (
 	'.NL' => $^O eq 'MSWin32' ? "\r\n" : "\n",
 	'.AT' => '@',
 	'.DP' => '$(',
+	'.SP' => " "
 );
 
 unless ($opt_c[0] || $opt_h)
@@ -63,6 +64,7 @@ if ($opt_d)
 {
 	my ($vol, $dirs, $file) = File::Spec->splitpath($ARGV[0]);
 	my (@dirs) = File::Spec->splitdir($dirs);
+	pop (@dirs) unless ($dirs[-1]);
 	push(@dirs, $file);
 	find({wanted => sub {add_file(scalar @dirs, $_, \%files);}, no_chdir => 1, follow => 1}, $ARGV[0]);
 }
@@ -120,6 +122,7 @@ sub process
 	}
 	$ifh->close;
 	$ofh->close;
+	chmod((stat($ifname))[2], $ofname);
 }
 
 sub parse
@@ -565,7 +568,7 @@ those parameters will be included in the space separated final list.
 
 Returns the value of the given environment string
 
-=item $(foreach var,word list,evaluated text)
+=item $(foreach var,word list,evaluated text [, nonl])
 
 This function iterates over each word in the word list and sets the variable
 to take the word. It then evaluates the evaluated text with the variable so
@@ -597,6 +600,9 @@ we will get
 Notice how the combined textual result of the foreach can be stored
 in a variable. This is useful so that a whole list of macro definitions
 can be inserted into a file without having to reference each one.
+
+If nonl is set then the output is a space separated rather than newline
+separated.
 
 =item $(include filename)
 
@@ -657,6 +663,10 @@ Returns an operating specific newline
 
 Returns a string containing the type of operating system (as returned by
 perl's $^O). Typical values are: MSWin32, linux
+
+=item .SP
+
+Contains a space character
 
 =item .TAB
 

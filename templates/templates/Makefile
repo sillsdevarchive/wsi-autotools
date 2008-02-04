@@ -36,13 +36,15 @@ $(PRODUCT)-$(VERSION).exe : all installer.nsi $(PKG_LIST)
 installer.nsi : templates/templates/installer.nsi Makefile
 	$(AUTOSUB)
 
-dist : $(RELEASE_DIR).tar.gz
+dist : @TARNAME@-@VERSION@.tar.gz
 
-$(RELEASE_DIR).tar.gz : MANIFEST $(PKG_LIST)
+@TARNAME@-@VERSION@.tar.gz : MANIFEST $(PKG_LIST)
 	@TARUP@
 
 MANIFEST : templates/templates/MANIFEST Makefile
 	$(AUTOSUB)
+
+@and $(DEBARCH),$(DEBIAN_template)@
 
 dist-clean : clean extra-clean
 
