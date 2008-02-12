@@ -33,7 +33,9 @@ my (%funcs) = (
 	'env' => 'env',
 	'match' => 'match',
 	'shell' => 'fn_exec',
-	'exist' => 'fn_exist'
+	'exist' => 'fn_exist',
+	'sub' => 'fn_subst',
+	'unique' => 'fn_unique'
 );
 
 my (%vars) = (
@@ -468,6 +470,26 @@ sub osslash
 	$str;
 }
 
+sub fn_subst
+{
+	my ($f, $r, $s) = map {expand($_)} @_;
+
+	$s =~ s/$f/$r/gm;
+	$s;
+}
+
+sub fn_unique
+{
+	my ($s) = @_;
+	my (@list) = split(' ', expand($s));
+	my (%unique, $c);
+
+	foreach (@list)
+	{ $unique{$_} = ++$c unless (defined $unique{$_}); }
+
+	return join (" ", sort {$unique{$a} <=> $unique{$b}} keys %unique);
+}
+
 __END__
 
 =head1 TITLE
@@ -645,6 +667,16 @@ like derived make dependencies work.
 
 Executes str as a shell command and returns the textual value. Whitespace is
 stripped from the start and end of the string.
+
+=item $(sub match,replace,str)
+
+searches for all occurrences of match string in str replacing them with the
+replace string. All strings are expanded.
+
+=item $(unique str)
+
+Given a whitespace delimited list of items return a space separated list of
+them such that the list only contains one occurrence of each unique item.
 
 =back
 

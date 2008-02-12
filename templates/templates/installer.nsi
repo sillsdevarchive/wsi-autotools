@@ -320,6 +320,7 @@ ${Index}:
   VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "${FONTNAME}"
   VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductVersion" "${VERSION}"
   VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "${VERSION}"
+  VIAddVersionKey /LANG=${LANG_ENGLISH} "CompanyName" "SIL International"
   VIAddVersionKey /LANG=${LANG_ENGLISH} "Comments" "@DESC_SHORT@"
   VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "${FONTNAME} font installer"
   @and $(COPYRIGHT),VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "$(COPYRIGHT)"@
@@ -397,7 +398,7 @@ SectionEnd
 
 Section -StartMenu
 ;  File "doc/OFL.txt"
-  @foreach f,$(DOCS),File "/ONAME=$(osslash $OUTDIR/$(f))" "$(osslash doc/$(f))"@
+  @foreach f,$(DOCS),File "/ONAME=$(sub /,\,$OUTDIR/$(f))" "$(osslash doc/$(f))"@
   !insertmacro MUI_STARTMENU_WRITE_BEGIN "FONT"
   SetShellVarContext all
   CreateDirectory $SMPROGRAMS\${MUI_STARTMENUPAGE_FONT_VARIABLE}
@@ -418,7 +419,8 @@ Section "Documentation" SecSrc
   SetOutPath "$INSTDIR"
   SetOverwrite ifnewer
   ;ADD YOUR OWN FILES HERE...
-  @and $(EXTRA_DIST),$(foreach f,$(EXTRA_DIST),File "/ONAME=$(osslash $OUTDIR/$(f))" "$(osslash $(f))")@
+  @and $(EXTRA_DIST),$(foreach f,$(unique $(sub /.*?$,,$(EXTRA_DIST))),CreateDirectory $(sub /,\,"$OUTDIR/$(f)"))@
+  @and $(EXTRA_DIST),$(foreach f,$(EXTRA_DIST),File "/ONAME=$(sub /,\,$OUTDIR/$(f))" "$(osslash $(f))")@
 
 SectionEnd
 
@@ -456,11 +458,11 @@ Section "Uninstall"
 ;  Delete  /REBOOTOK "$WINDIR\Fonts\${FONT_BOLD_FILE}"
   SendMessage ${HWND_BROADCAST} ${WM_FONTCHANGE} 0 0 /TIMEOUT=5000
 
-
-  Delete "$INSTDIR\OFL"
-  Delete "$INSTDIR\${SRC_ARCHIVE}"
+  @and $(EXTRA_DIST),$(foreach f,$(EXTRA_DIST),Delete "$(sub /,\,$INSTDIR/$(f))")@
+  @foreach f,$(DOCS),Delete "$(sub /,\,$INSTDIR/$(f))"@
   Delete "$INSTDIR\Uninstall.exe"
 
+  @and $(EXTRA_DIST),$(foreach f,$(unique $(sub /.*?$,,$(EXTRA_DIST))),RMDir $(sub /,\,"$INSTDIR/$(f)"))@
   RMDir "$INSTDIR"
 
   ReadRegStr $0 "${MUI_STARTMENUPAGE_REGISTRY_ROOT}" \
