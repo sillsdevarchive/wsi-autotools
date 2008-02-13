@@ -10,6 +10,7 @@ MAKE_GDL_PARAMS=@MAKE_GDL_PARAMS@
 RELEASE_DIR=ttf-sil-$(PRODUCT)-$(VERSION)
 CONFIG_FILE=@CONFIG_FILE@
 AUTOSUB=@AUTOSUB@
+TEMPLATE_DIR=@TEMPLATE_DIR@
 RM=@RM@
 CP=@CP@
 
@@ -33,7 +34,7 @@ exe : $(PRODUCT)-$(VERSION).exe
 $(PRODUCT)-$(VERSION).exe : all installer.nsi $(PKG_LIST)
 	makensis -O$(PRODUCT)_nsi.log installer.nsi
 
-installer.nsi : templates/templates/installer.nsi Makefile
+installer.nsi : $(TEMPLATE_DIR)/templates/installer.nsi Makefile
 	$(AUTOSUB)
 
 dist : @TARNAME@-@VERSION@.tar.gz
@@ -41,7 +42,7 @@ dist : @TARNAME@-@VERSION@.tar.gz
 @TARNAME@-@VERSION@.tar.gz : MANIFEST $(PKG_LIST)
 	@TARUP@
 
-MANIFEST : templates/templates/MANIFEST Makefile
+MANIFEST : $(TEMPLATE_DIR)/templates/MANIFEST Makefile
 	$(AUTOSUB)
 
 @and $(DEBARCH),$(DEBIAN_template)@
@@ -55,5 +56,5 @@ clean :
 extra-clean :
 	-$(RM) installer.nsi Makefile *.zip *.exe
 
-Makefile : $(CONFIG_FILE) templates/system.cfg templates/templates/Makefile
+Makefile : $(CONFIG_FILE) $(TEMPLATE_DIR)/system.cfg $(TEMPLATE_DIR)/templates/Makefile
 	$(AUTOSUB)
