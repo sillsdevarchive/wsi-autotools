@@ -407,7 +407,7 @@ Section -StartMenu
 	CreateDirectory $SMPROGRAMS\${MUI_STARTMENUPAGE_FONT_VARIABLE}
 
   createIcons:
-	@foreach f,$(DOCS),CreateShortCut $SMPROGRAMS/${MUI_STARTMENUPAGE_FONT_VARIABLE}/$(f) $OUTDIR/$(f)@
+	@foreach f,$(DOCS),$(sub /,\,CreateShortCut $SMPROGRAMS/${MUI_STARTMENUPAGE_FONT_VARIABLE}/$(f) $OUTDIR/$(f))@
 	CreateShortCut $SMPROGRAMS\${MUI_STARTMENUPAGE_FONT_VARIABLE}\Uninstall.lnk \
 	  $INSTDIR\Uninstall.exe
   !insertmacro MUI_STARTMENU_WRITE_END
