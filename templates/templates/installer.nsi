@@ -469,6 +469,7 @@ Section "Uninstall"
 	"${MUI_STARTMENUPAGE_REGISTRY_KEY}" "${MUI_STARTMENUPAGE_REGISTRY_VALUENAME}"
 
   StrCmp $0 "" noshortcuts
+	@foreach f,$(DOCS),$(sub /,\,Delete $0/$(f))@
 	Delete $0\Uninstall.lnk
 	Delete $0\License.lnk
 	RMDir $0

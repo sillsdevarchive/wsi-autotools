@@ -27,6 +27,9 @@ debug : all
 
 @and $(or $(EXTRA_RULES),$(EXTRA_TARGETS)),$(ALL_template)@
 
+temp :
+	@@- mkdir $@@
+
 @osslash $(foreach v,$(FONTS),$(PROGRAM_template))@
 
 exe : $(PRODUCT)-$(VERSION).exe
