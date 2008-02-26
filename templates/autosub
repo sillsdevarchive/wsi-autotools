@@ -69,6 +69,7 @@ if ($opt_d)
 	pop (@dirs) unless ($dirs[-1]);
 	push(@dirs, $file);
 	find({wanted => sub {add_file(scalar @dirs, $_, \%files);}, no_chdir => 1, follow => 1}, $ARGV[0]);
+	$vars{'.TEMPLATE_DIR'} = $ARGV[0];
 }
 else
 { $files{$ARGV[0]} = $opt_o || ''; }

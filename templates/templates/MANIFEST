@@ -7,7 +7,7 @@
 @foreach v,$(FONTS),$($(v)_VTP_SRC)@
 @foreach v,$(FONTS),$(foreach f,$($(v)_VTP_DEPENDS),$(f))@
 @foreach v,$(FONTS),$($(v)_AP)@
-@foreach v,$(.TEMPLATES),$(v)@
+@sub $(.TEMPLATE_DIR),templates/templates,$(foreach v,$(.TEMPLATES),$(v))@
 @foreach v,$(dir templates/nsis),templates/nsis/$(v)@
 templates/autosub
 templates/system.cfg

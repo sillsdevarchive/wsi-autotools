@@ -1,0 +1,23 @@
+Usage
+
+The templates directory of this project is designed to be used in conjunction
+with a particular font project. There are a few ways of associating this
+templates directory with a font project.
+
+1. use the command svn co
+http://scripts.sil.org/svn-public/utilities/font-package/trunk/templates to
+pull in the latest version of the templates into your project.
+
+2. If you are already managing your font project using svn then you can use
+the command svn setprop svn:externals "templates
+http://scripts.sil.org/svn-public/utilities/font-package/trunk/templates"
+which will tell svn to pull in the templates directory from the given
+repository and keep it up to date from there.
+
+3. svn co
+http://scripts.sil.org/svn-public/utilities/font-package/trunk/templates
+../templates and keep the templates directory in a different location than as
+templates under the root of the font project. This works on all systems,
+except that it will break make dist under Windows (since Windows can't make
+the necessary symbolic link to the directory needed to put the template files
+in the distribution bundle).
