@@ -35,7 +35,8 @@ my (%funcs) = (
 	'shell' => 'fn_exec',
 	'exist' => 'fn_exist',
 	'sub' => 'fn_subst',
-	'unique' => 'fn_unique'
+	'unique' => 'fn_unique',
+	'if' => 'fn_if'
 );
 
 my (%vars) = (
@@ -75,6 +76,7 @@ else
 { $files{$ARGV[0]} = $opt_o || ''; }
 
 $vars{'.TEMPLATES'} = join(' ', sort keys %files);
+$vars{'.CONFIG'} = $opt_c[0];
 
 foreach (@opt_c)
 { parse($_); }
@@ -448,6 +450,15 @@ sub match
 	return '';
 }
 
+sub fn_if
+{
+	my (@parms) = @_;
+	my ($s) = expand($parms[0]);
+	if ($s)
+	{ return expand($parms[1]); }
+	else
+	{ return expand($parms[2]); }
+}
 
 sub fnor
 {
@@ -638,6 +649,11 @@ can be inserted into a file without having to reference each one.
 If nonl is set then the output is a space separated rather than newline
 separated.
 
+=item $(if test,true,false)
+
+evaluates the first element, if non zero and not empty then returns the
+second expression expanded, else return the third expression evaluated.
+
 =item $(include filename)
 
 Reads in another file as a configuration file
@@ -693,6 +709,10 @@ begin with a .
 Contains an @ character. Useful for when you want an @ in the middle of
 a macro expansion.
 
+=item .CONFIG
+
+The first config file listed by -c
+
 =item .DP
 
 Returns the string C<$(> which has the advantage, due to late evaluation
@@ -720,6 +740,10 @@ Contains a tab character
 
 This contains a space separated list of source files that autosub will
 have processed.
+
+=item .TEMPLATEDIR
+
+The directory where the templates are held.
 
 =back
 

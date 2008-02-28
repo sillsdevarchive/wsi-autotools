@@ -5,7 +5,7 @@
 ; This line is included to pull in the MS system.dll plugin rather than the
 ; stubbed debian one. You should get the MS system.dll and put it in the templates/
 ; dir or comment out this line if building on windows
-!addplugindir templates/nsis
+@if $(sub MSWin32,,$(.OS)),!addplugindir $(.TEMPLATE_DIR)/../nsis@
 
 ; Some useful definitions that may need changing for different font versions
 !ifndef VERSION

@@ -38,6 +38,6 @@ binary-indep: build install
 binary: binary-indep binary-arch
 
 Makefile : templates/templates/Makefile
-	templates/build @CONFIG_FILE@
+	templates/build @.CONFIG@
 
 .PHONY: build clean install binary-arch binary-indep binary
