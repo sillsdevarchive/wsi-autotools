@@ -462,6 +462,8 @@ Section "Uninstall"
   @and $(EXTRA_DIST),$(foreach f,$(EXTRA_DIST),Delete "$(sub /,\,$INSTDIR/$(f))")@
   @foreach f,$(DOCS),Delete "$(sub /,\,$INSTDIR/$(f))"@
   Delete "$INSTDIR\Uninstall.exe"
+  @foreach f,$(DOCS),$(sub /,\,Delete $SMPROGRAMS/${MUI_STARTMENUPAGE_FONT_VARIABLE}/$(f))@
+  Delete $SMPROGRAMS\${MUI_STARTMENUPAGE_FONT_VARIABLE}\Uninstall.lnk
 
   @and $(EXTRA_DIST),$(foreach f,$(unique $(sub /.*?$,,$(EXTRA_DIST))),RMDir $(sub /,\,"$INSTDIR/$(f)"))@
   RMDir "$INSTDIR"
