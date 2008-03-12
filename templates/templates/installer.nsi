@@ -459,27 +459,30 @@ Section "Uninstall"
 ;  Delete  /REBOOTOK "$WINDIR\Fonts\${FONT_BOLD_FILE}"
   SendMessage ${HWND_BROADCAST} ${WM_FONTCHANGE} 0 0 /TIMEOUT=5000
 
+;  !insertmacro MUI_STARTMENU_GETFOLDER FONT ${MUI_STARTMENU_FONT_VARIABLE}
+  StrCpy $R9 "${MUI_STARTMENUPAGE_FONT_DEFAULTFOLDER}"
   @and $(EXTRA_DIST),$(foreach f,$(EXTRA_DIST),Delete "$(sub /,\,$INSTDIR/$(f))")@
   @foreach f,$(DOCS),Delete "$(sub /,\,$INSTDIR/$(f))"@
   Delete "$INSTDIR\Uninstall.exe"
   @foreach f,$(DOCS),$(sub /,\,Delete $SMPROGRAMS/${MUI_STARTMENUPAGE_FONT_VARIABLE}/$(f))@
   Delete $SMPROGRAMS\${MUI_STARTMENUPAGE_FONT_VARIABLE}\Uninstall.lnk
+  RMDir "$SMPROGRAMS\${MUI_STARTMENUPAGE_FONT_VARIABLE}"
 
   @and $(EXTRA_DIST),$(foreach f,$(unique $(sub /.*?$,,$(EXTRA_DIST))),RMDir $(sub /,\,"$INSTDIR/$(f)"))@
   RMDir "$INSTDIR"
 
-  ReadRegStr $0 "${MUI_STARTMENUPAGE_REGISTRY_ROOT}" \
-	"${MUI_STARTMENUPAGE_REGISTRY_KEY}" "${MUI_STARTMENUPAGE_REGISTRY_VALUENAME}"
+;  ReadRegStr $0 "${MUI_STARTMENUPAGE_REGISTRY_ROOT}" \
+;    "${MUI_STARTMENUPAGE_REGISTRY_KEY}" "${MUI_STARTMENUPAGE_REGISTRY_VALUENAME}"
 
-  StrCmp $0 "" noshortcuts
-	@foreach f,$(DOCS),$(sub /,\,Delete $0/$(f))@
-	Delete $0\Uninstall.lnk
-	Delete $0\License.lnk
-	RMDir $0
+;  StrCmp $0 "" noshortcuts
+;    foreach f,$(DOCS),$(sub /,\,Delete $0/$(f))
+;    Delete $0\Uninstall.lnk
+;    Delete $0\License.lnk
+;    RMDir $0
 
   noshortcuts:
 
-  DeleteRegKey /ifempty HKLM "Software\${INSTALL_SUFFIX}"
+;  DeleteRegKey /ifempty HKLM "Software\${INSTALL_SUFFIX}"
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${FONTNAME}"
 
 SectionEnd
