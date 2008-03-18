@@ -409,8 +409,8 @@ Section -StartMenu
 
   createIcons:
 	@foreach f,$(DOCS),$(sub /,\,CreateShortCut $SMPROGRAMS/${MUI_STARTMENUPAGE_FONT_VARIABLE}/$(f) $OUTDIR/$(f))@
-	CreateShortCut $SMPROGRAMS\${MUI_STARTMENUPAGE_FONT_VARIABLE}\Uninstall.lnk \
-	  $INSTDIR\Uninstall.exe
+	CreateShortCut $SMPROGRAMS\${MUI_STARTMENUPAGE_FONT_VARIABLE}\Uninstall.lnk $INSTDIR\Uninstall.exe
+	WriteRegStr ${MUI_STARTMENUPAGE_REGISTRY_ROOT} "${MUI_STARTMENUPAGE_REGISTRY_KEY}" "Menus" "$SMPROGRAMS\${MUI_STARTMENUPAGE_FONT_VARIABLE}"
   !insertmacro MUI_STARTMENU_WRITE_END
 SectionEnd
 
@@ -460,16 +460,16 @@ Section "Uninstall"
   SendMessage ${HWND_BROADCAST} ${WM_FONTCHANGE} 0 0 /TIMEOUT=5000
 
 ;  !insertmacro MUI_STARTMENU_GETFOLDER FONT ${MUI_STARTMENU_FONT_VARIABLE}
-  StrCpy $R9 "${MUI_STARTMENUPAGE_FONT_DEFAULTFOLDER}"
+  ReadRegStr $0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${FONTNAME}" "Menus"
   @and $(EXTRA_DIST),$(foreach f,$(EXTRA_DIST),Delete "$(sub /,\,$INSTDIR/$(f))")@
   @foreach f,$(DOCS),Delete "$(sub /,\,$INSTDIR/$(f))"@
   Delete "$INSTDIR\Uninstall.exe"
-  @foreach f,$(DOCS),$(sub /,\,Delete $SMPROGRAMS/${MUI_STARTMENUPAGE_FONT_VARIABLE}/$(f))@
-  Delete $SMPROGRAMS\${MUI_STARTMENUPAGE_FONT_VARIABLE}\Uninstall.lnk
-  RMDir "$SMPROGRAMS\${MUI_STARTMENUPAGE_FONT_VARIABLE}"
-
   @and $(EXTRA_DIST),$(foreach f,$(unique $(sub /.*?$,,$(EXTRA_DIST))),RMDir $(sub /,\,"$INSTDIR/$(f)"))@
   RMDir "$INSTDIR"
+  @foreach f,$(DOCS),$(sub /,\,Delete "$0/$(f)")@
+  Delete "$0\Uninstall.lnk"
+  RMDir "$0"
+
 
 ;  ReadRegStr $0 "${MUI_STARTMENUPAGE_REGISTRY_ROOT}" \
 ;    "${MUI_STARTMENUPAGE_REGISTRY_KEY}" "${MUI_STARTMENUPAGE_REGISTRY_VALUENAME}"
