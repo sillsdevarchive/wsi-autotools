@@ -32,6 +32,8 @@ temp :
 
 @osslash $(foreach v,$(FONTS),$(PROGRAM_template))@
 
+all :: @and $(which defoma-hints),debian-src/$(TARNAME).defoma@
+
 exe : $(PRODUCT)-$(VERSION).exe
 
 $(PRODUCT)-$(VERSION).exe : all installer.nsi $(PKG_LIST)
@@ -49,6 +51,8 @@ MANIFEST : $(TEMPLATE_DIR)/templates/MANIFEST Makefile
 	$(AUTOSUB)
 
 @and $(DEBARCH),$(DEBIAN_template)@
+
+@and $(which defoma-hints),$(DEFOMA_template)@
 
 dist-clean : clean extra-clean
 

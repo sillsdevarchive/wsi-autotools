@@ -36,7 +36,8 @@ my (%funcs) = (
 	'exist' => 'fn_exist',
 	'sub' => 'fn_subst',
 	'unique' => 'fn_unique',
-	'if' => 'fn_if'
+	'if' => 'fn_if',
+	'which' => 'which'
 );
 
 my (%vars) = (
@@ -490,6 +491,39 @@ sub fn_subst
 	$s;
 }
 
+sub which
+{
+	my ($s) = @_;
+	my ($str) = expand($s);
+
+	if ($^O eq 'MSWin32')
+	{
+		my (@exts) = split(/\s*;\s*/, $ENV{'PATHEXT'});
+		my (@path) = split(/\s*;\s*/, $ENV{'PATH'});
+		my ($p, $e);
+
+		foreach $p (@path)
+		{
+			return "$p\\$str" if (-x "$p/$str");
+			foreach $e (@exts)
+			{
+				return "$p\\$str.$e" if (-x "$p/$str.$e");
+			}
+		}
+	}
+	else
+	{
+		my (@path) = split(/:/, $ENV{'PATH'});
+		my ($p);
+
+		foreach $p (@path)
+		{
+			return "$p/$str" if (-x "$p/$str");
+		}
+	}
+	return '';
+}
+
 sub fn_unique
 {
 	my ($s) = @_;
@@ -689,6 +723,12 @@ stripped from the start and end of the string.
 
 searches for all occurrences of match string in str replacing them with the
 replace string. All strings are expanded.
+
+=item $(which str)
+
+Searches the PATH environment variable looking for str as an executable. On
+Windows will add all the possible extensions as well in the hunt. Returns
+the fully expanded executable if it exists or empty otherwise.
 
 =item $(unique str)
 

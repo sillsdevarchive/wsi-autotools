@@ -9,6 +9,8 @@
 @foreach v,$(FONTS),$($(v)_AP)@
 @sub $(.TEMPLATE_DIR),templates/templates,$(foreach v,$(.TEMPLATES),$(v))@
 @foreach v,$(dir templates/nsis),templates/nsis/$(v)@
+@exist debian-src,$(foreach v,$(dir debian-src),debian-src/$(v))@
+@exist debian-src/bug,$(foreach v,$(dir debian-src/bug),debian-src/bug/$(v))@
 templates/autosub
 templates/system.cfg
 templates/build
