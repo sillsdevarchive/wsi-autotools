@@ -408,7 +408,7 @@ Section -StartMenu
 	CreateDirectory $SMPROGRAMS\${MUI_STARTMENUPAGE_FONT_VARIABLE}
 
   createIcons:
-	@foreach f,$(DOCS),$(sub /,\,CreateShortCut $SMPROGRAMS/${MUI_STARTMENUPAGE_FONT_VARIABLE}/$(f) $OUTDIR/$(f))@
+	@foreach f,$(DOCS),$(sub /,\,CreateShortCut $SMPROGRAMS/${MUI_STARTMENUPAGE_FONT_VARIABLE}/$(f).lnk $OUTDIR/$(f))@
 	CreateShortCut $SMPROGRAMS\${MUI_STARTMENUPAGE_FONT_VARIABLE}\Uninstall.lnk $INSTDIR\Uninstall.exe
 	WriteRegStr ${MUI_STARTMENUPAGE_REGISTRY_ROOT} "${MUI_STARTMENUPAGE_REGISTRY_KEY}" "Menus" "$SMPROGRAMS\${MUI_STARTMENUPAGE_FONT_VARIABLE}"
   !insertmacro MUI_STARTMENU_WRITE_END
@@ -466,7 +466,7 @@ Section "Uninstall"
   Delete "$INSTDIR\Uninstall.exe"
   @and $(EXTRA_DIST),$(foreach f,$(unique $(sub /.*?$,,$(EXTRA_DIST))),RMDir $(sub /,\,"$INSTDIR/$(f)"))@
   RMDir "$INSTDIR"
-  @foreach f,$(DOCS),$(sub /,\,Delete "$0/$(f)")@
+  @foreach f,$(DOCS),$(sub /,\,Delete "$0/$(f).lnk")@
   Delete "$0\Uninstall.lnk"
   RMDir "$0"
 
