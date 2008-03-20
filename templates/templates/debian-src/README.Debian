@@ -1,11 +1,16 @@
-The Charis SIL font family
+The @DESC_NAME@ family
 ----------------------------
 
-Charis SIL is released under the SIL Open Font License.
-Charis is a trademark of SIL International.
+@DESC_NAME@ is released under the SIL Open Font License.
+@DESC_NAME@ is a trademark of SIL International.
 
 See OFL.txt and OFL-FAQ.txt for details of the SIL Open Font License.
 See FONTLOG.txt for information on this and previous releases.
+
+The FontLab .vfb sources, the Graphite .gdl sources and the VOLT .vtl
+sources are available on the upstream website and in the source package.
+Simply type "apt-get source" to download them.
+
 
 These fonts are automatically available through fontconfig (if it is
 installed) to all fontconfig-aware applications. If you wish to use the
@@ -33,4 +38,4 @@ be found on SIL's Non-Roman Script Initiative website about writing systems at:
 'http://scripts.sil.org'.
 
 
- -- Nicolas Spalinger <nicolas.spalinger@sil.org>, 23 Jun 2006
+ -- Nicolas Spalinger <nicolas.spalinger@sil.org>, 22 Jun 2006

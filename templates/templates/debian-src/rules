@@ -2,13 +2,13 @@
 
 build: build-stamp
 build-stamp: Makefile
-	$(MAKE)
+	$(MAKE) TEMPLATE_DIR=templates
 	touch build-stamp
 
 clean: Makefile
 	dh_testdir
 	dh_testroot
-	$(MAKE) clean
+	$(MAKE) TEMPLATE_DIR=templates clean
 	rm -f build-stamp
 	dh_clean
 	rm -f debian/files
