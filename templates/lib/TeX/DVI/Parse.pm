@@ -160,6 +160,7 @@ sub new
 sub parse
 	{
 	my $self = shift;
+	my (%attrs) = @_;
 	my $oldselect = select;
 	local $/ = undef;
 	## print STDERR "Parse started\n";
@@ -194,7 +195,7 @@ sub parse
 			$buffer = pop @list;
 			my $can;
 			if ($can = $self->can($command->[0]))
-				{ &$can($self, @list) };
+				{ &$can($self, @list, \%attrs) };
 			}
 		else
 			{
@@ -296,8 +297,9 @@ sub fnt_def
 	}
 sub preamble
 	{
-	my ($self, $ord, $i, $num, $den, $mag, $k, $text) = @_;
-	print "Pream\t$ord, i: $i, num: $num, den: $den, mag: $mag, k: $k\n\t`$text'\n";
+	my ($self, $ord, $i, $num, $den, $mag, $k, $text, $opts) = @_;
+	print "Pream\t$ord, i: $i, num: $num, den: $den, mag: $mag, k: $k\n";
+	print "\t`$text'\n" unless ($opts->{-nodate});
 	}
 sub post
 	{
