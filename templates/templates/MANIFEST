@@ -1,5 +1,6 @@
 @include templates/system.cfg@
 @foreach v,$(DOCS),doc/$(v)@
+@foreach v,$(dir test,.txt),test/$(v)@
 @foreach v,$(FONTS),$($(v)_TARGET)@
 @foreach v,$(FONTS),$($(v)_SRC)@
 @foreach v,$(FONTS),$($(v)_GDL_SHARED)@
