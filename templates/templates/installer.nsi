@@ -24,7 +24,7 @@
 ;-----------------------------
 ; Macros for Font installation
 ;-----------------------------
-!addincludedir templates/nsis
+!addincludedir @osslash $(.TEMPLATE_DIR)/../nsis@
 !include FileFunc.nsh
 !include FontRegAdv.nsh
 !include FontName.nsh

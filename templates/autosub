@@ -690,7 +690,7 @@ second expression expanded, else return the third expression evaluated.
 
 =item $(include filename)
 
-Reads in another file as a configuration file
+Reads in another file as a configuration file if it exists.
 
 =item $(indent indent,string)
 
