@@ -13,7 +13,7 @@
   !define VERSION @VERSION@
 !endif
 
-!define FONTNAME @PRODUCT@
+!define FONTNAME @titlecase $(PRODUCT)@
 !define SRC_ARCHIVE "ttf-sil-@PRODUCT@-${VERSION}.zip"
 @foreach f,$(FONTS),!define FONT_$(f)_FILE "$($(f)_TARGET)"@
 ;!define FONT_REG_FILE "${FONTNAME}.ttf"
@@ -323,7 +323,7 @@ ${Index}:
   VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "${VERSION}"
   VIAddVersionKey /LANG=${LANG_ENGLISH} "CompanyName" "SIL International"
   VIAddVersionKey /LANG=${LANG_ENGLISH} "Comments" "@DESC_SHORT@"
-  VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "${FONTNAME} font installer"
+  VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "${FONTNAME} Font installer"
   @and $(COPYRIGHT),VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "$(COPYRIGHT)"@
   VIProductVersion @WINDOWS_VERSION@
 

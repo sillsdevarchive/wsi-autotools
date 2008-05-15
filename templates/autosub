@@ -37,7 +37,8 @@ my (%funcs) = (
 	'sub' => 'fn_subst',
 	'unique' => 'fn_unique',
 	'if' => 'fn_if',
-	'which' => 'which'
+	'which' => 'which',
+	'titlecase' => 'fn_title'
 );
 
 my (%vars) = (
@@ -489,6 +490,13 @@ sub fn_subst
 
 	$s =~ s/$f/$r/gm;
 	$s;
+}
+
+sub fn_title
+{
+	my ($s) = @_;
+	my ($str) = expand($s);
+	return ucfirst($str);
 }
 
 sub which
