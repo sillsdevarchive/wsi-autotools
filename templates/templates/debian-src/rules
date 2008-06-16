@@ -10,8 +10,7 @@ clean: Makefile
 	dh_testroot
 	$(MAKE) TEMPLATE_DIR=templates clean
 	rm -f build-stamp
-	dh_clean
-	rm -f debian/files
+	dh_clean -k
 
 install: build
 	dh_testdir
@@ -25,7 +24,7 @@ binary-arch:
 binary-indep: build install
 	dh_testdir
 	dh_testroot
-	dh_installchangelogs
+	dh_installchangelogs @or $(exist FONTLOG.txt), $(exist doc/FONTLOG.txt)@
 	dh_installdocs
 	dh_compress
 	dh_installdefoma

@@ -25,7 +25,7 @@ debug : DEBUG=1
 
 debug : all
 
-@and $(or $(EXTRA_RULES),$(EXTRA_TARGETS)),$(ALL_template)@
+@and $(or $(EXTRA_RULES),$(EXTRA_TARGETS),$(TEST_FILES)),$(ALL_template)@
 
 temp :
 	@@- mkdir $@@

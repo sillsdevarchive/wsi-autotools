@@ -5,10 +5,9 @@ The @DESC_NAME@ family
 @DESC_NAME@ is a trademark of SIL International.
 
 See OFL.txt and OFL-FAQ.txt for details of the SIL Open Font License.
-See FONTLOG.txt for information on this and previous releases.
+See FONTLOG.txt (changelog.gz) for information on this and previous releases.
 
-The FontLab .vfb sources, the Graphite .gdl sources and the VOLT .vtl
-sources are available on the upstream website and in the source package.
+The font sources are available on the upstream website and in the source package.
 Simply type "apt-get source" to download them.
 
 
@@ -38,4 +37,4 @@ be found on SIL's Non-Roman Script Initiative website about writing systems at:
 'http://scripts.sil.org'.
 
 
- -- Nicolas Spalinger <nicolas.spalinger@sil.org>, 22 Jun 2006
+ -- ...  22 Mar 2008

@@ -62,7 +62,7 @@ if ($opt_h)
 	exit;
 }
 
-push (@excludes, '\\.svn', '\\.cvs', '\\.bzr');
+push (@excludes, '\\.svn', '\\CVS', '\\.bzr', '\\.hg', '\\.git');
 
 # just do files for now
 if ($opt_d)
@@ -300,10 +300,20 @@ sub expand_var
 		if ($context->{$key})
 		{ error("Recursive expansion of $key", $error); }
 		$context->{$key}++;
-		my ($res) = expand($vars{$key}, $context, $error);
+		my ($res) = expand(lookup_var($key), $context, $error);
 		$context->{$key}--;
 		return $res;
 	}
+}
+
+sub lookup_var
+{
+	my ($str) = @_;
+
+	if ($str =~ m{^ENV/(.*)$}o)
+	{ return $ENV{$1}; }
+	else
+	{ return $vars{$str}; }
 }
 
 sub error
@@ -792,6 +802,13 @@ have processed.
 =item .TEMPLATEDIR
 
 The directory where the templates are held.
+
+=item ENV/
+
+If a variable name begins with ENV/ then the remainder of the string is
+considered as an environment variable. E.g.
+
+	ENV/USER
 
 =back
 
