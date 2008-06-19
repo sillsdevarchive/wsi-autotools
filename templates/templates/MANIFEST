@@ -1,6 +1,8 @@
 @foreach v,$(DOCS),doc/$(v)@
-@foreach v,$(dir test,.txt),test/$(v)@
-@foreach v,$(dir test/standards),test/standards/$(v)@
+@exist OFL.txt@
+@exist FONTLOG.txt@
+@foreach v,$(dir test-suite,.txt),test-suite/$(v)@
+@foreach v,$(dir test-suite/standards),test-suite/standards/$(v)@
 @foreach v,$(FONTS),$($(v)_TARGET)@
 @foreach v,$(FONTS),$($(v)_SRC)@
 @foreach v,$(FONTS),$($(v)_GDL_SHARED)@
