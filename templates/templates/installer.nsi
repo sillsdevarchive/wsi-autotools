@@ -338,7 +338,7 @@ Section "!${FONTNAME} Font" SecFont
   ReadRegStr $0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${FONTNAME}" "Version"
   IfErrors BranchTestRem
   ${VersionCompare} $0 ${VERSION} $R0
-  IntCmp $R0 1 BranchQuery BranchQuery BranchInstall
+  IntCmp $R0 1 BranchQuery BranchQuery BranchUninstall
 
   BranchQuery:
 	MessageBox MB_YESNO|MB_ICONQUESTION "A newer or same version of ${FONTNAME} is already installed. Do you want me to force the installation of this font package?" /SD IDNO IDYES BranchUninstall
