@@ -1,4 +1,4 @@
-The template files for debian used here require the developer to create extra files in the debian-src directory.
+The template files for debian used here requires the developer to create extra files in the debian-src directory.
 
 @TARNAME@.defoma-hints
 This needs to be edited by hand. The best way to start this is to run something like:

@@ -32,7 +32,7 @@ temp :
 
 @osslash $(foreach v,$(FONTS),$(PROGRAM_template))@
 
-all :: @and $(which defoma-hints),debian-src/$(TARNAME).defoma@
+all :: @and $(which defoma-hints),debian-src/$(TARNAME).defoma-hints@
 
 exe : $(PRODUCT)-$(VERSION).exe
 

@@ -1,13 +1,13 @@
-This package was debianized by ..
+This package was debianized by @PACKAGER@ @PACKAGER_EMAIL@
 on ..
 
 See the Alioth project for co-maintainership of open fonts:
 http://alioth.debian.org/projects/pkg-fonts
 
 It was downloaded from
-'http://scripts.sil.org/@NAME'.
+'http://scripts.sil.org/@PRODUCT@'.
 
-Upstream Author: ...
+Upstream Author(s): @AUTHOR@
 
 
 @COPYRIGHT@
@@ -23,6 +23,7 @@ http://scripts.sil.org/OFL
 -----------------------------------------------------------
 SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
 -----------------------------------------------------------
+
 PREAMBLE
 The goals of the Open Font License (OFL) are to stimulate worldwide
 development of collaborative font projects, to support the font creation
@@ -105,3 +106,8 @@ INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
 DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
 OTHER DEALINGS IN THE FONT SOFTWARE.
+
+
+The Debian packaging is (C) 2007 @PACKAGER@
+@PACKAGER_EMAIL@ and is released under
+the same license as the Font Software.

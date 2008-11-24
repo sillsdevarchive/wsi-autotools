@@ -1,6 +1,7 @@
 @foreach v,$(DOCS),doc/$(v)@
 @exist OFL.txt@
 @exist FONTLOG.txt@
+@exist OFL-FAQ.txt@
 @foreach v,$(dir test-suite,.txt),test-suite/$(v)@
 @foreach v,$(dir test-suite/standards),test-suite/standards/$(v)@
 @foreach v,$(FONTS),$($(v)_TARGET)@

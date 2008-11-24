@@ -21,3 +21,22 @@ templates under the root of the font project. This works on all systems,
 except that it will break make dist under Windows (since Windows can't make
 the necessary symbolic link to the directory needed to put the template files
 in the distribution bundle).
+
+Debian packaging
+
+This system will create a debian-src/ directory that is designed to be copied
+as a debian/ directory for packaging purposes. make dist creates a tarball of
+all the key files, but for portability purposes it does not head the tree
+inside the tarball with the package and version. So to build one needs to:
+
+create a build directory
+create package-version subdir of build
+cd package-version
+tar xvzf distribution.tar.gz
+cd ..
+tar cvzf package_version.orig.tar.gz package-version
+cd package-version
+cp -r debian-src debian
+pdebuild or whatever to build the package
+
+Perhaps I need to put the head dir in the tarball. Hmm.
