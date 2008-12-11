@@ -38,7 +38,8 @@ my (%funcs) = (
 	'unique' => 'fn_unique',
 	'if' => 'fn_if',
 	'which' => 'which',
-	'titlecase' => 'fn_title'
+	'titlecase' => 'fn_title',
+	'index' => 'fn_index',
 );
 
 my (%vars) = (
@@ -436,6 +437,15 @@ sub indent
 
 	$s =~ s/(^|\n)(?!$)/$1$i/og;
 	$s;
+}
+
+sub fn_index
+{
+	my ($index, $str) = @_;
+	my ($s) = expand($str);
+	my ($i) = expand($index);
+	my (@res) = split(' ', $s);
+	return $res[$i];
 }
 
 sub mapstr

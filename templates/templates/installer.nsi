@@ -13,7 +13,7 @@
   !define VERSION @VERSION@
 !endif
 
-!define FONTNAME @titlecase $(PRODUCT)@
+!define FONTNAME @or $(DESC_NAME),$(titlecase $(PRODUCT))@
 !define SRC_ARCHIVE "ttf-sil-@PRODUCT@-${VERSION}.zip"
 @foreach f,$(FONTS),!define FONT_$(f)_FILE "$($(f)_TARGET)"@
 ;!define FONT_REG_FILE "${FONTNAME}.ttf"
@@ -398,7 +398,7 @@ Section "!${FONTNAME} Font" SecFont
 SectionEnd
 
 Section -StartMenu
-;  File "doc/OFL.txt"
+  @and $(LICENSE),File "$(LICENSE)"@
   @foreach f,$(DOCS),File "/ONAME=$(sub /,\,$OUTDIR/$(f))" "$(osslash doc/$(f))"@
   !insertmacro MUI_STARTMENU_WRITE_BEGIN "FONT"
   SetShellVarContext all

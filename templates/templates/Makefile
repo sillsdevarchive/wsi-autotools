@@ -19,7 +19,11 @@ PKG_LIST=@foreach f,$(DOCS),doc/$(f),1@ @foreach f,$(EXTRA_DIST),$(f),nonl@
 .PHONY: all exe dist clean dist-clean extra-clean
 .SUFFIXES:
 
-all ::
+all :: @LICENSE@
+
+@LICENSE@ : @$(index 0,$(FONTS))_TARGET@
+	$(TEMPLATE_DIR)/bin/ttfgetname -t 13 @$(index 0,$(FONTS))_TARGET@ > $@
+	cp $@ debian-src/LICENSE
 
 debug : DEBUG=1
 
