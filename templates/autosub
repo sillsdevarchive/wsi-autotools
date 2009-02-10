@@ -809,7 +809,7 @@ Contains a tab character
 This contains a space separated list of source files that autosub will
 have processed.
 
-=item .TEMPLATEDIR
+=item .TEMPLATE_DIR
 
 The directory where the templates are held.
 

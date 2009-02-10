@@ -13,12 +13,12 @@
   !define VERSION @VERSION@
 !endif
 
-!define FONTNAME @or $(DESC_NAME),$(titlecase $(PRODUCT))@
+!define FONTNAME "@or $(DESC_NAME),$(titlecase $(PRODUCT))@"
 !define SRC_ARCHIVE "ttf-sil-@PRODUCT@-${VERSION}.zip"
 @foreach f,$(FONTS),!define FONT_$(f)_FILE "$($(f)_TARGET)"@
 ;!define FONT_REG_FILE "${FONTNAME}.ttf"
 ;!define FONT_BOLD_FILE "${FONTNAME}-Bold.ttf"
-!define INSTALL_SUFFIX "SIL\Fonts\${FONTNAME}"
+!define INSTALL_SUFFIX "SIL\Fonts\@titlecase $(PRODUCT)@"
 !define FONT_DIR "$WINDIR\Fonts"
 
 ;-----------------------------
