@@ -40,6 +40,7 @@ my (%funcs) = (
 	'which' => 'which',
 	'titlecase' => 'fn_title',
 	'index' => 'fn_index',
+	'die' => 'fn_die',
 );
 
 my (%vars) = (
@@ -350,6 +351,15 @@ sub fnand
 		return '' unless ($s);
 	}
 	return $s;
+}
+
+sub fn_die
+{
+	my ($s) = @_;
+	my ($str) = expand($s);
+
+	print STDERR "$str\n";
+	exit(1);
 }
 
 sub dir

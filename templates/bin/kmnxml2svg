@@ -157,7 +157,7 @@ def processSVGFile(file):
 
 optlist, args = getopt(sys.argv[1:], 'f:s:t:w:')
 for x in optlist :
-	options[x[0]] = x[1]
+	options[x[0].replace('-', '')] = x[1]
 
 processFiles(args[0])
 

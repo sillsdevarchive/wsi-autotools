@@ -1,4 +1,4 @@
-#!/usr/bin/perl -CO
+#!/usr/bin/perl
 
 =head1 NAME
 
@@ -170,7 +170,7 @@ $entities = join("", keys %entities);
 getopts('f:s:');
 
 $Parse::RecDescent::skip = '[ \t]*';
-#$RD_HINT=1;
+# $RD_HINT=1;
 
 # Parse::RecDescent->Precompile($grammar, 'test_grammar');
 $p = Parse::RecDescent->new($grammar);
@@ -178,7 +178,7 @@ $p = Parse::RecDescent->new($grammar);
 	local ($/);
 	$text = <>;
 }
-#$RD_TRACE=1;
+# $RD_TRACE=1;
 $r = $p->kmnfile(" $text");
 foreach $k (keys %{$r->{'store'}})
 { flatten_store($k, $r); }
