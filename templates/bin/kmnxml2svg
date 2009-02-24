@@ -7,7 +7,7 @@ from getopt import getopt
 _fontSize = 24
 _font = 'Charis SIL'
 _fontWeight = 'normal'
-_unknown = '??'
+_unknown = ''
 
 options = {
 	'f': 'Charis SIL',
@@ -103,9 +103,8 @@ def processSVGFile(file):
 					if (_keyMap.has_key(keyId)):
 						(unshift, shift) = _keyMap[keyId]
 					else:
-						continue
-	#                    unshift = _unknown
-	#                    shift = _unknown
+						 unshift = _unknown
+						 shift = _unknown
 
 					upperKey = _caseMap.get(keyId)
 					fontStyle = "font-size:%d;font-weight:%s;font-family:%s;" % (options['s'], options['w'], options['f'])

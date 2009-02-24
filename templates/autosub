@@ -41,6 +41,7 @@ my (%funcs) = (
 	'titlecase' => 'fn_title',
 	'index' => 'fn_index',
 	'die' => 'fn_die',
+	'print' => 'fn_print'
 );
 
 my (%vars) = (
@@ -121,6 +122,8 @@ sub process
 	my ($ifh) = IO::File->new("< $ifname") || die "Can't open $ifname for reading";
 	my ($ofh);
 
+	$vars{'.INFILE'} = $ifname;
+	$vars{'.OUTFILE'} = $ofname;
 	if ($ofname)
 	{ $ofh = IO::File->new("> $ofname") || die "Can't open $ofname for writing"; }
 	else
@@ -503,6 +506,12 @@ sub fnor
 		return $s if ($s);
 	}
 	return '';
+}
+
+sub fn_print
+{
+	my ($s) = join(" ", map {expand($_)} @_);
+	print STDERR "$s\n";
 }
 
 sub osslash
