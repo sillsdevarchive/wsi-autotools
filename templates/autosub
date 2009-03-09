@@ -41,6 +41,7 @@ my (%funcs) = (
 	'titlecase' => 'fn_title',
 	'index' => 'fn_index',
 	'die' => 'fn_die',
+	'error' => 'error',
 	'print' => 'fn_print'
 );
 
