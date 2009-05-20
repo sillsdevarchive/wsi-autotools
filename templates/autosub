@@ -4,6 +4,7 @@ use Getopt::Long;
 use IO::File;
 use File::Find;
 use File::Spec;
+use Cwd;
 use Pod::Usage;
 
 use strict;
@@ -51,7 +52,8 @@ my (%vars) = (
 	'.NL' => $^O eq 'MSWin32' ? "\r\n" : "\n",
 	'.AT' => '@',
 	'.DP' => '$(',
-	'.SP' => " "
+	'.SP' => " ",
+	'.CWD' => getcwd
 );
 
 unless ($opt_c[0] || $opt_h)
@@ -800,6 +802,10 @@ a macro expansion.
 =item .CONFIG
 
 The first config file listed by -c
+
+=item .CWD
+
+The current working directory
 
 =item .DP
 
