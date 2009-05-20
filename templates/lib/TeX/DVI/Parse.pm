@@ -240,6 +240,7 @@ sub nop
 sub bop
 	{
 	my ($self, $ord, @numbers) = @_;
+	my ($attrs) = pop @numbers;
 	$prev_page = pop @numbers;
 	print "Bop\t$ord, id: [@numbers], previous page: $prev_page\n";
 	}

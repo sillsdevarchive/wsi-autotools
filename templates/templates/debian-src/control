@@ -3,7 +3,7 @@ Section: x11
 Priority: optional
 Maintainer: Debian Fonts Task Force <pkg-fonts-devel@lists.alioth.debian.org>
 Uploaders: Nicolas Spalinger <nicolas.spalinger@@sil.org>, Daniel Glassey <wdg@@debian.org>
-Build-Depends: debhelper (>= 4.1.0), defoma (>= 0.7.0) @DEB_BUILD_EXTRAS@
+Build-Depends: debhelper (>= 4.1.0), defoma (>= 0.7.0), libfont-freetype-perl, @DEB_BUILD_EXTRAS@
 Standards-Version: 3.7.2
 Homepage: http://scripts.sil.org/@PRODUCT@
 Vcs-svn: svn://svn.debian.org/svn/pkg-fonts/packages/@TARNAME
