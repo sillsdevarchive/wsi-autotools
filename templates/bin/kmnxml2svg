@@ -2,7 +2,7 @@
 
 import os, sys, string
 from xml.dom.minidom import *
-from getopt import getopt
+import getopt
 
 _fontSize = 24
 _font = 'Charis SIL'
@@ -59,9 +59,9 @@ nonKeys = ('back', 'tab', 'capslock', 'enter', 'shiftl', 'shiftr', 'ctrll',
 
 _keyMap = {}
 
-def processFiles(keyboardFile):
+def processFiles(keyboardFile,outputsvg):
 	parseKeyboardFile(keyboardFile)
-	processSVGFile(options['t'])
+	processSVGFile(options['t'],outputsvg)
 
 def parseKeyboardFile(file):
 	global name
@@ -76,7 +76,7 @@ def parseKeyboardFile(file):
 		_keyMap[keyId] = (unshift, shift)
 	#print _keyMap
 
-def processSVGFile(file):
+def processSVGFile(file,outputsvg):
 	global name
 	dom = parse(file)
 	if name :
@@ -156,15 +156,38 @@ def processSVGFile(file):
 			dom.documentElement.appendChild(newLayer)
 
 			#print dom.toprettyxml()
-			outf = open(args[1], 'w')
+			outf = open(outputsvg, 'w')
 			outf.write(dom.toxml('utf-8'))
 			outf.close()
 
-optlist, args = getopt(sys.argv[1:], 'f:s:t:w:')
-for x in optlist :
-	options[x[0].replace('-', '')] = x[1]
+def usage():
+	print """%s [-f font] [-s point_size] [-w weight] [-t template.svg] input.xml output.svg
+	-f font to use in svg file
+	-s font point size
+	-w font weight (defaults to normal)
+	-t template .svg file (keyboard.svg)
+	use inkscape to change svg into another format"""%(sys.argv[0])
 
-processFiles(args[0])
 
-#if __name__ == '__main__':
+
+def main():
+	try:
+		optlist, args = getopt.getopt(sys.argv[1:], "hf:s:t:w:", ["help"])
+	except getopt.GetoptError, err:
+		# print help information and exit:
+		print str(err) # will print something like "option -a not recognized"
+		usage()
+		sys.exit(2)
+	for o, a in optlist:
+		options[o.replace('-', '')] = a
+		if o in ("-h", "--help"):
+			usage()
+			sys.exit()
+	if len(args) != 2:
+		usage()
+		sys.exit()
+	processFiles(args[0], args[1])
+
+if __name__ == "__main__":
 #    processFiles('keyboard.svg', 'thailit.xml')
+	main()
