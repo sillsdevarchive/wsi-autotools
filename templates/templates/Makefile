@@ -13,6 +13,7 @@ AUTOSUB=@AUTOSUB@
 TEMPLATE_DIR=@TEMPLATE_DIR@
 RM=@RM@
 CP=@CP@
+MAKENSIS=@or $(MAKENSIS),makensis@
 
 PKG_LIST=@foreach f,$(DOCS),doc/$(f),1@ @foreach f,$(EXTRA_DIST),$(f),nonl@
 
@@ -22,8 +23,8 @@ PKG_LIST=@foreach f,$(DOCS),doc/$(f),1@ @foreach f,$(EXTRA_DIST),$(f),nonl@
 all :: @LICENSE@
 
 @LICENSE@ : @$(index 0,$(FONTS))_TARGET@
-	$(TEMPLATE_DIR)/bin/ttfgetname -t 13 @$(index 0,$(FONTS))_TARGET@ > $@
-	cp $@ debian-src/LICENSE
+	perl $(TEMPLATE_DIR)/bin/ttfgetname -t 13 @$(index 0,$(FONTS))_TARGET@ > $@
+	$(CP) $@ debian-src/LICENSE
 
 debug : DEBUG=1
 
@@ -41,7 +42,7 @@ all :: @and $(which defoma-hints),debian-src/$(TARNAME).defoma-hints@
 exe : $(PRODUCT)-$(VERSION).exe
 
 $(PRODUCT)-$(VERSION).exe : all installer.nsi $(PKG_LIST)
-	makensis -O$(PRODUCT)_nsi.log installer.nsi
+	$(MAKENSIS) -O$(PRODUCT)_nsi.log installer.nsi
 
 installer.nsi : $(TEMPLATE_DIR)/templates/installer.nsi Makefile
 	$(AUTOSUB)
