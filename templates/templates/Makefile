@@ -13,6 +13,7 @@ AUTOSUB=@AUTOSUB@
 TEMPLATE_DIR=@TEMPLATE_DIR@
 RM=@RM@
 CP=@CP@
+MKDIR=@MKDIR@
 MAKENSIS=@or $(MAKENSIS),makensis@
 
 PKG_LIST=@foreach f,$(DOCS),doc/$(f),1@ @foreach f,$(EXTRA_DIST),$(f),nonl@
