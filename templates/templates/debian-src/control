@@ -14,6 +14,6 @@ Package: @TARNAME@
 Architecture: all
 Depends: defoma
 Suggests: x-ttcidfont-conf | fontconfig, libgraphite3, pango-graphite
-Recommends: fontforge, fontforge-doc, inkscape, libfont-ttf-perl, fonttools, gucharmap, open-font-design-toolkit
+Suggests: fontforge, fontforge-doc, inkscape, libfont-ttf-perl, fonttools, gucharmap, open-font-design-toolkit
 Description: @DESC_SHORT@
 @indent $(.SP),$(DESC_LONG)@

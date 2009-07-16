@@ -10,7 +10,7 @@
 @foreach v,$(FONTS),$($(v)_VTP_SRC)@
 @foreach v,$(FONTS),$(foreach f,$($(v)_VTP_DEPENDS),$(f))@
 @foreach v,$(FONTS),$($(v)_AP)@
-@sub $(.TEMPLATE_DIR),templates/templates,$(foreach v,$(.TEMPLATES),$(v))@
+@sub \Q$(.TEMPLATE_DIR)\E,templates/templates,$(foreach v,$(.TEMPLATES),$(v))@
 @foreach v,$(dir $(TEMPLATE_DIR)/nsis),templates/nsis/$(v)@
 @foreach v,$(dir $(TEMPLATE_DIR)/bin),templates/bin/$(v)@
 @foreach v,$(dir $(TEMPLATE_DIR)/lib/TeX/DVI),templates/lib/TeX/DVI/$(v)@
