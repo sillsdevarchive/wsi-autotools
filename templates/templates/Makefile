@@ -50,7 +50,7 @@ installer.nsi : $(TEMPLATE_DIR)/templates/installer.nsi Makefile
 dist : @TARNAME@-@VERSION@.tar.gz
 
 @TARNAME@-@VERSION@.tar.gz : MANIFEST $(PKG_LIST)
-	$(TEMPLATE_DIR)/bin/tarman -cvzf $@ -T MANIFEST -l templates=$(TEMPLATE_DIR)
+	perl $(TEMPLATE_DIR)/bin/tarman -cvzf $@ -T MANIFEST -l templates=$(TEMPLATE_DIR)
 
 MANIFEST : $(TEMPLATE_DIR)/templates/MANIFEST Makefile
 	$(AUTOSUB)

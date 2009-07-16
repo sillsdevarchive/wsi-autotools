@@ -54,11 +54,15 @@ if( $opts->{c} ) {
 	{
 		my ($ft) = $f;
 
-		if ($to and index($f, $from) == 0)
+		if ($from and index($f, $from) == 0)
 		{ substr($ft, 0, length($from)) = $to; }
 
 		$tar->add_files($ft);
-		$tar->rename($ft, $f) if ($ft ne $f);
+	if ($ft ne $f)
+	{
+		$ft =~ s/\\/\//og;
+			$tar->rename($ft, $f);
+	}
 	}
 
 	$tar->write($file, $compress);

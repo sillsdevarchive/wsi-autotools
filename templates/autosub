@@ -530,7 +530,10 @@ sub fn_subst
 {
 	my ($f, $r, $s) = map {expand($_)} @_;
 
-	$s =~ s/$f/$r/gm;
+	$f =~ s/([\/])(?![QE])/\\$1/og;
+	$r =~ s/([\/\\])/\\$1/og;
+
+	eval "\$s =~ s/$f/$r/gm";
 	$s;
 }
 
