@@ -21,11 +21,7 @@ PKG_LIST=@foreach f,$(DOCS),doc/$(f),1@ @foreach f,$(EXTRA_DIST),$(f),nonl@
 .PHONY: all exe dist clean dist-clean extra-clean
 .SUFFIXES:
 
-all :: @LICENSE@
-
-@LICENSE@ : @$(index 0,$(FONTS))_TARGET@
-	perl $(TEMPLATE_DIR)/bin/ttfgetname -t 13 @$(index 0,$(FONTS))_TARGET@ > $@
-	$(CP) $@ debian-src/LICENSE
+all ::
 
 debug : DEBUG=1
 
