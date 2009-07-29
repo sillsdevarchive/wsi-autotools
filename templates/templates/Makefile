@@ -27,12 +27,12 @@ debug : DEBUG=1
 
 debug : all
 
-@and $(or $(EXTRA_RULES),$(EXTRA_TARGETS),$(TEST_FILES)),$(ALL_template)@
-
 temp :
 	@@- mkdir $@@
 
 @osslash $(foreach v,$(FONTS),$(PROGRAM_template))@
+
+@and $(or $(EXTRA_RULES),$(EXTRA_TARGETS),$(TEST_FILES)),$(ALL_template)@
 
 all :: @and $(which defoma-hints),debian-src/$(TARNAME).defoma-hints@
 
