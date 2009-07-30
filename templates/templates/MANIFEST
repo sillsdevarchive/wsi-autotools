@@ -13,6 +13,9 @@
 @foreach v,$(FONTS),$(foreach f,$($(v)_VTP_DEPENDS),$(f))@
 @MASTER_SFD@
 @MASTER_XML@
+@MASTER_VTP@
+@MASTER_AP@
+@CLASSES_FILE@
 @sub \Q$(.TEMPLATE_DIR)\E,templates/templates,$(foreach v,$(.TEMPLATES),$(v))@
 @foreach v,$(dir $(TEMPLATE_DIR)/nsis),templates/nsis/$(v)@
 @foreach v,$(dir $(TEMPLATE_DIR)/bin),templates/bin/$(v)@
