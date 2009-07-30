@@ -6,10 +6,13 @@
 @foreach v,$(FONTS),$($(v)_GDL_SHARED)@
 @foreach v,$(FONTS),$($(v)_VTP)@
 @foreach v,$(FONTS),$($(v)_AP)@
+@foreach v,$(FONTS),$($(v)_SFD)@
+@foreach v,$(FONTS),$($(v)_LEG)@
 @foreach v,$(FONTS),$(foreach f,$($(v)_GDL_DEPENDS),$(f))@
 @foreach v,$(FONTS),$($(v)_VTP_SRC)@
 @foreach v,$(FONTS),$(foreach f,$($(v)_VTP_DEPENDS),$(f))@
-@foreach v,$(FONTS),$($(v)_AP)@
+@MASTER_SFD@
+@MASTER_XML@
 @sub \Q$(.TEMPLATE_DIR)\E,templates/templates,$(foreach v,$(.TEMPLATES),$(v))@
 @foreach v,$(dir $(TEMPLATE_DIR)/nsis),templates/nsis/$(v)@
 @foreach v,$(dir $(TEMPLATE_DIR)/bin),templates/bin/$(v)@
