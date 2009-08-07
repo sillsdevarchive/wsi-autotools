@@ -34,6 +34,10 @@ temp :
 
 @and $(or $(EXTRA_RULES),$(EXTRA_TARGETS),$(TEST_FILES)),$(ALL_template)@
 
+@and $(LICENSE_IN_FONT),$(LICENSE_template)@
+
+@if $(MASTER_SFD),$(MASTER_template)@
+
 all :: @and $(which defoma-hints),debian-src/$(TARNAME).defoma-hints@
 
 exe : $(PRODUCT)-$(VERSION).exe
