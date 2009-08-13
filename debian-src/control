@@ -1,0 +1,13 @@
+Source: wsi-autotools
+Section: devel
+Priority: optional
+Build-Depends: debhelper
+Maintainer: Martin Hosken<martin_hosken@sil.org>
+Standards-Version: 3.6.1
+
+Package: wsi-autotools
+Architecture: all
+Depends:perl (>=5.8), make, libfont-ttf-scripts-perl (>=0.14), defoma
+Suggests: fontforge, texlive-xetex, grcompiler, xsltproc, firefox, devscripts
+Description: Font and keyboard build environment
+ This module provides an infrastructure for building font and keyboard projects

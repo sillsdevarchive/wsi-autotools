@@ -1,0 +1,14 @@
+#!/bin/sh
+
+INSTALLDIR=/usr/share/wsi-autotools
+CFGFILE=$1
+if [ $CFGFILE = '-d' ] ; then
+	CFGFILE='package.cfg';
+	DEBUG='-d';
+elif [ -z $CFGFILE ] ; then
+	CFGFILE='package.cfg';
+else
+	DEBUG=$2;
+fi
+
+perl $DEBUG $INSTALLDIR/templates/autosub -c $CFGFILE -c $INSTALLDIR/templates/system.cfg -d . -x \~ $INSTALLDIR/templates/templates
