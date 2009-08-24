@@ -43,7 +43,8 @@ my (%funcs) = (
 	'index' => 'fn_index',
 	'die' => 'fn_die',
 	'error' => 'error',
-	'print' => 'fn_print'
+	'print' => 'fn_print',
+	'call' => 'fn_call'
 );
 
 my (%vars) = (
@@ -170,7 +171,7 @@ sub parse_eval
 	chomp;
 	return if (m/^\s*[#]/o);     # comment
 	return if (m/^\s*$/o);
-	if (s/^\s*(\S+?)\s*(\|?)=\s*//o)  # simple assignment
+	if (s/^\s*(\S+?)\s*([|+]?)=\s*//o)  # simple assignment
 	{
 		my (%context) = ($1 => 1);
 		my ($var) = expand($1, \%context, $error);
@@ -191,7 +192,14 @@ sub parse_eval
 		elsif (m/^([^#]+)/o)
 		{ $val = $1; }
 
-		$vars{$var} = expand_partial($val, $error) unless ($or and $vars{$var});
+		unless ($or eq '|' and $vars{$var})
+		{
+			my ($temp) = expand_partial($val, $error);
+			if ($or eq '+')
+			{ $vars{$var} .= " $temp"; }
+			else
+			{ $vars{$var} = $temp; }
+		}
 	}
 	else
 	{ expand_partial($_); }
@@ -357,6 +365,26 @@ sub fnand
 		return '' unless ($s);
 	}
 	return $s;
+}
+
+sub fn_call
+{
+	my ($s, @parms) = @_;
+	my ($p, @stack, $count, $res);
+
+	$count = 1;
+	foreach $p (@parms)
+	{
+		my ($r) = expand($p);
+		push (@stack, $vars{$count});
+		$vars{$count} = $r;
+		$count++;
+	}
+	$res = expand($s);
+	$count = 1;
+	foreach $p (@stack)
+	{ $vars{$count++} = $p; }
+	return $res;
 }
 
 sub fn_die
@@ -685,6 +713,11 @@ The following functions are supported:
 
 The and function takes a list of one or more strings and returns empty string
 if any of them are empty, otherwise it returns the last one
+
+=item $(call, str,[parm, ...])
+
+Returns str expanded but using $(1), $(2), etc. as each of the parm values
+in the list, after they have been expanded. Call may recurse into other calls safely.
 
 =item $(dir, str, [filter,...])
 

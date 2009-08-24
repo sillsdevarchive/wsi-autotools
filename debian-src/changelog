@@ -1,3 +1,9 @@
+wsi-autotools (0.1.1-1ubuntu) jaunty; urgency=low
+
+  * Add some documentation and make program conform to it
+
+ -- Martin Hosken <martin_hosken@sil.org>  Thu, 13 Aug 2009 12:59:40 +0700
+
 wsi-autotools (0.1-1ubuntu1) jaunty; urgency=low
 
   * Initial release.

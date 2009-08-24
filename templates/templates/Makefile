@@ -63,11 +63,11 @@ MANIFEST : $(TEMPLATE_DIR)/templates/MANIFEST Makefile
 dist-clean : clean extra-clean
 
 clean :
-	@@-$(RM) $(PRODUCT)_nsi.log gdlerr.txt
-	@foreach v,$(FONTS),$(and $(or $($(v)_VTP),$($(v)_GDL)),$(.TAB)$(.AT)-$(RM) $($(v)_VTP) $($(v)_GDL))@
+	@@-$(RM) $(PRODUCT)-$(VERSION).exe $(PRODUCT)_nsi.log @TARNAME@-$(VERSION).tar.gz gdlerr.txt
+	@@-$(RM) @foreach v,$(CLEAN_FILES),$(v),nonl@
 
 extra-clean :
-	-$(RM) installer.nsi Makefile *.zip *.exe
+	-$(RM) @sub \Q$(.TEMPLATE_DIR)/\E,,$(.TEMPLATES)@
 
 Makefile : $(CONFIG_FILE) $(TEMPLATE_DIR)/system.cfg $(TEMPLATE_DIR)/templates/Makefile
 	$(AUTOSUB)
