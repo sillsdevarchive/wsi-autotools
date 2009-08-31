@@ -40,7 +40,7 @@ begin : /begin/i (/Unicode/i)(?) '>' /use/i '(' name ')' eol
 keyval : /\S+/ string eol
 		{ $return = [$item[1], [$item[2]]]; }
 
-eol : 'c' <skip: '[ \t]+'> /[^\n]*/ <skip: '[ \t]*'> /\n/ | /\r?\n/
+eol : 'c' <skip: '[ \t]+|\n'> /[^\n]*/ <skip: '[ \t]*'> /\n/ | /\r?\n/
 
 group : grouphdr rule(s)
 		{ $return = [$item[1], {'rules' => $item[2]}]; }
@@ -178,6 +178,8 @@ $p = Parse::RecDescent->new($grammar);
 	local ($/);
 	$text = <>;
 }
+$text =~ s/^\x{FEFF}//o;
+
 # $RD_TRACE=1;
 $r = $p->kmnfile(" $text");
 foreach $k (keys %{$r->{'store'}})

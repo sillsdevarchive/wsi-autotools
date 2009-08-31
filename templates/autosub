@@ -57,7 +57,7 @@ my (%vars) = (
 	'.CWD' => getcwd
 );
 
-unless ($opt_c[0] || $opt_h)
+unless ($opt_d || $ARGV[0] || $opt_h)
 {
 	pod2usage(1);
 	exit;
