@@ -202,7 +202,11 @@ sub parse_eval
 		}
 	}
 	else
-	{ expand_partial($_); }
+	{
+		my ($res) = expand_partial($_);
+		if ($res ne $_)
+		{ evalstr($res); }
+	}
 }
 
 sub expand
@@ -458,8 +462,9 @@ sub fn_foreach
 		$vars{$var} = $v;
 		$str = expand($exp);
 		$resstr .= ($dnonl ? " " : "\n") if ($resstr);
-		$resstr .= expand($str);
-		evalstr($str, 1);
+		$resstr .= $str;
+#        $resstr .= expand($str);
+#        evalstr($str, 1);
 	}
 	delete $vars{$var};
 #    $vars{expand($res)} = $resstr if ($res);

@@ -16,7 +16,7 @@ CP=@CP@
 MKDIR=@MKDIR@
 MAKENSIS=@or $(MAKENSIS),makensis@
 
-PKG_LIST=@foreach f,$(DOCS),doc/$(f),1@ @foreach f,$(EXTRA_DIST),$(f),nonl@
+PKG_LIST=@foreach f,$(DOCS),doc/$(f),nonl@ @foreach f,$(EXTRA_DIST),$(f),nonl@
 
 .PHONY: all exe dist clean dist-clean extra-clean
 .SUFFIXES:
@@ -64,7 +64,7 @@ dist-clean : clean extra-clean
 
 clean :
 	@@-$(RM) $(PRODUCT)-$(VERSION).exe $(PRODUCT)_nsi.log @TARNAME@-$(VERSION).tar.gz gdlerr.txt
-	@@-$(RM) @foreach v,$(CLEAN_FILES),$(v),nonl@
+@CLEAN_FILES@
 
 extra-clean :
 	-$(RM) @sub \Q$(.TEMPLATE_DIR)/\E,,$(.TEMPLATES)@
