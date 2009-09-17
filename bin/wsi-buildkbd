@@ -11,6 +11,9 @@ else
 	DEBUG=$2;
 fi
 
-eval "$(grep '[[:alnum:]_-.][[:space:]]*=' local.cfg)"
+if [ -f local.cfg ] ; then
+	eval "$(grep '[[:alnum:]_-.][[:space:]]*=' local.cfg)"
+fi
+
 TEMPLATES=${TEMPLATE_DIR:-$INSTALLDIR/templates}
 perl $DEBUG $TEMPLATES/autosub -c $CFGFILE -c $TEMPLATES/keyman.cfg -d . -x \~ $TEMPLATES/keyboards

@@ -1,3 +1,9 @@
+wsi-autotools (0.1.5-0ubuntu1) jaunty; urgency=low
+
+  * Fix won't run without local.cfg present bug
+
+ -- Tim Eves <tim@tims-d820>  Thu, 17 Sep 2009 14:42:10 +0700
+
 wsi-autotools (0.1.4-0ubuntu1) jaunty; urgency=low
 
   * Fix default template path name spelling error and add 
