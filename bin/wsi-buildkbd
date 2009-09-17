@@ -1,5 +1,6 @@
 #!/bin/sh
 
+INSTALLDIR=/usr/share/wsi-autotools
 CFGFILE=$1
 if [ $CFGFILE = '-d' ] ; then
 	CFGFILE='package.cfg';
@@ -9,5 +10,7 @@ elif [ -z $CFGFILE ] ; then
 else
 	DEBUG=$2;
 fi
-DIR=/usr/share/wsi-autotools/template
-perl $DEBUG $DIR/autosub -c $CFGFILE -c $DIR/keyman.cfg -d . -x \~ $DIR/keyboards
+
+eval "$(grep '[[:alnum:]_-.][[:space:]]*=' local.cfg)"
+TEMPLATES=${TEMPLATE_DIR:-$INSTALLDIR/templates}
+perl $DEBUG $TEMPLATES/autosub -c $CFGFILE -c $TEMPLATES/keyman.cfg -d . -x \~ $TEMPLATES/keyboards
