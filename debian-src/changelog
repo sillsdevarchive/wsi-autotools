@@ -1,3 +1,10 @@
+wsi-autotools (0.1.4-0ubuntu1) jaunty; urgency=low
+
+  * Fix default template path name spelling error and add 
+    suppoprt for local.cfg
+
+ -- Tim Eves <tim@tims-d820>  Thu, 17 Sep 2009 14:11:48 +0700
+
 wsi-autotools (0.1.3-0ubuntu1) jaunty; urgency=low
 
   * Package new upstream version
