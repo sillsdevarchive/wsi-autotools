@@ -196,7 +196,7 @@ sub parse_eval
 		{
 			my ($temp) = expand_partial($val, $error);
 			if ($or eq '+')
-			{ $vars{$var} .= " $temp"; }
+			{ $vars{$var} .= ($vars{$var} ? " " : "") . $temp; }
 			else
 			{ $vars{$var} = $temp; }
 		}
