@@ -67,6 +67,7 @@ clean :
 @CLEAN_FILES@
 
 extra-clean :
+	-$(RM) temp test-suite/tmp test-suite/temp test-suite/results
 	-$(RM) @sub \Q$(.TEMPLATE_DIR)/\E,,$(.TEMPLATES)@
 
 Makefile : $(CONFIG_FILE) $(TEMPLATE_DIR)/system.cfg $(TEMPLATE_DIR)/templates/Makefile
