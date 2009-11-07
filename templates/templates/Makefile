@@ -63,12 +63,14 @@ MANIFEST : $(TEMPLATE_DIR)/templates/MANIFEST Makefile
 dist-clean : clean extra-clean
 
 clean :
+	@@-$(RM) @TEMP@/*
 	@@-$(RM) $(PRODUCT)-$(VERSION).exe $(PRODUCT)_nsi.log @TARNAME@-$(VERSION).tar.gz gdlerr.txt
 @CLEAN_FILES@
 
 extra-clean :
-	-$(RM) temp test-suite/tmp test-suite/temp test-suite/results
-	-$(RM) @sub \Q$(.TEMPLATE_DIR)/\E,,$(.TEMPLATES)@
+	@@-$(RM) @TEMP@
+	@@-$(RM) @sub \Q$(.TEMPLATE_DIR)/\E,,$(.TEMPLATES)@
+@EXTRA_CLEAN_FILES@
 
 Makefile : $(CONFIG_FILE) $(TEMPLATE_DIR)/system.cfg $(TEMPLATE_DIR)/templates/Makefile
 	$(AUTOSUB)
