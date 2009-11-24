@@ -32,7 +32,7 @@ temp :
 
 @osslash $(foreach v,$(FONTS),$(PROGRAM_template))@
 
-@and $(or $(EXTRA_RULES),$(EXTRA_TARGETS),$(TEST_FILES)),$(ALL_template)@
+@and $(or $(EXTRA_RULES),$(EXTRA_TARGETS),$(TEST_FILES),$(TEST_TEXFILES)),$(ALL_template)@
 
 @and $(LICENSE_IN_FONT),$(LICENSE_template)@
 
