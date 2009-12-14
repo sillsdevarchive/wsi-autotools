@@ -1,3 +1,9 @@
+wsi-autotools (0.2-0ubuntu1) jaunty; urgency=low
+
+  * Bug fixes and improved model support
+
+ -- Martin Hosken <martin_hosken@sil.org>  Tue, 10 Nov 2009 09:06:41 +0700
+
 wsi-autotools (0.1.5-0ubuntu1) jaunty; urgency=low
 
   * Fix won't run without local.cfg present bug
