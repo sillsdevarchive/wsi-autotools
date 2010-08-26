@@ -16,11 +16,11 @@
 <xsl:apply-templates/>
 <div id="key" style="border-width: 1px; border-style: solid; float: right;" title="Key">
 <p>
-Same glyphs, different positions:<br />
+Same # of glyphs, different positions:<br />
 <span style="color:#a0a0a0">identical glyph positions</span><br />
 <span style="color:#ff0000;"><xsl:value-of select="$left"/> glyph position</span><br />
 <span style="color:#0000ff;"><xsl:value-of select="$right"/> glyph position</span><br />
-Different glyphs:<br />
+Different # of glyphs:<br />
 <span style="color:#ff00ff;"><xsl:value-of select="$left"/> glyphs</span><br />
 <span style="color:#00ffff;"><xsl:value-of select="$right"/> glyphs</span>
 </p>

@@ -5,6 +5,8 @@
 <xsl:param name="left"/>
 <xsl:param name="right"/>
 <xsl:param name="local"/>
+<xsl:param name="svgdir">.wsi-temp/svg/</xsl:param>
+<xsl:param name="resultsdir">test-suite/results/</xsl:param>
 
 <xsl:variable name="diffSvg">/usr/<xsl:value-of select="$local"/>share/graphitesvg/diffSvg.xsl</xsl:variable>
 
@@ -16,10 +18,12 @@
 <xsl:text>xsltproc -o test-suite/results/</xsl:text>
 <xsl:value-of select="$prefix"/>
 <xsl:value-of select="concat($left,$right)"/><xsl:value-of select="$suffix"/>
-<xsl:text> --stringparam xTolerance 100 --stringparam origSvg file:`pwd`/test-suite/tmp/</xsl:text>
+<xsl:text> --stringparam xTolerance 100 --stringparam origSvg file:`pwd`/</xsl:text>
+<xsl:value-of select="$svgdir"/>
 <xsl:value-of select="$prefix"/><xsl:value-of select="$right"/>
 <xsl:value-of select="$suffix"/>
-<xsl:text> </xsl:text><xsl:value-of select="$diffSvg"/><xsl:text> test-suite/tmp/</xsl:text>
+<xsl:text> </xsl:text><xsl:value-of select="$diffSvg"/><xsl:text> </xsl:text>
+<xsl:value-of select="$svgdir"/>
 <xsl:value-of select="$prefix"/><xsl:value-of select="$left"/>
 <xsl:value-of select="$suffix"/>
 <xsl:text>
