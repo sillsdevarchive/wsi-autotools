@@ -8,5 +8,5 @@ KMNCOMPILER=@KMNCOMPILER@
 
 @KMNTESTS@
 
-Makefile : @CONFIG_FILE@ @TEMPLATE_DIR@/keyman.cfg @TEMPLATE_DIR@/Makefile
+Makefile : @CONFIG_FILE@ @TEMPLATE_DIR@/keyman.cfg @TEMPLATE_DIR@/keyboards/Makefile
 	@AUTOSUB@
